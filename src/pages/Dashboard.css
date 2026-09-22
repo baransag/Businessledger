@@ -1,4 +1,4 @@
-/* src/pages/Dashboard.css — Nova Glass Dashboard */
+/* src/pages/Dashboard.css — Nova Glass Dashboard (Image 4 Inspired) */
 
 .dashboard { max-width: 1200px; }
 
@@ -10,7 +10,7 @@
 
 .dashboard-header {
   display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 16px; margin-bottom: 28px;
+  flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
 }
 
 .dashboard-header h1 {
@@ -23,7 +23,7 @@
 
 /* Nova Glass Balance Hero */
 .balance-hero {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(218, 235, 227, 0.6) 45%, rgba(153, 205, 216, 0.45) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(218, 235, 227, 0.65) 45%, rgba(153, 205, 216, 0.45) 100%);
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
   border: 1px solid rgba(255, 255, 255, 0.95);
@@ -35,30 +35,42 @@
   box-shadow: 0 16px 40px -10px rgba(153, 205, 216, 0.35), inset 0 1px 2px rgba(255, 255, 255, 1);
 }
 
-.balance-hero::before {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  background: radial-gradient(circle at 50% 30%, rgba(243, 195, 178, 0.25) 0%, transparent 60%);
-  pointer-events: none;
+.hero-top-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(153, 205, 216, 0.4);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1a454d;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(153, 205, 216, 0.15);
+}
+
+.hero-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseBeacon 2s ease-in-out infinite;
 }
 
 .balance-hero-label {
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--pal-slate);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 10px;
-  display: inline-block;
-  padding: 4px 14px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.14em;
+  margin-bottom: 6px;
 }
 
 .balance-hero-amount {
-  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-size: clamp(2.4rem, 6.5vw, 4rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
@@ -66,30 +78,157 @@
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.balance-hero-amount.positive {
-  color: #1b6a48;
-}
-
-.balance-hero-amount.negative {
-  color: #b94230;
-}
+.balance-hero-amount.positive { color: #1b6a48; }
+.balance-hero-amount.negative { color: #b94230; }
 
 .balance-hero-sub {
   margin-top: 12px;
   font-size: 0.875rem;
   color: var(--clr-text-secondary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Stat Cards (Pill accents) */
+/* Nova Glass Numbered Badges & Pill Tags */
+.stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.stat-num-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--pal-slate);
+  background: rgba(101, 113, 102, 0.08);
+  border: 1px solid rgba(101, 113, 102, 0.14);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.05em;
+}
+
+.stat-pill-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.tag-credit {
+  background: rgba(218, 235, 227, 0.7);
+  color: #1b6a48;
+  border: 1px solid rgba(27, 106, 72, 0.2);
+}
+
+.tag-debit {
+  background: rgba(243, 195, 178, 0.55);
+  color: #ba3d28;
+  border: 1px solid rgba(186, 61, 40, 0.2);
+}
+
+.tag-net {
+  background: rgba(153, 205, 216, 0.35);
+  color: #1a454d;
+  border: 1px solid rgba(26, 69, 77, 0.2);
+}
+
+.tag-records {
+  background: rgba(253, 232, 211, 0.6);
+  color: #8c5b23;
+  border: 1px solid rgba(140, 91, 35, 0.2);
+}
+
+/* Stat Cards Ambient Glass */
 .stat-credit {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(218, 235, 227, 0.45) 100%) !important;
-  border-top: 3px solid var(--clr-green) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(218, 235, 227, 0.55) 100%) !important;
+  border: 1px solid rgba(218, 235, 227, 0.9) !important;
 }
 
 .stat-debit {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(243, 195, 178, 0.35) 100%) !important;
-  border-top: 3px solid var(--clr-red) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(243, 195, 178, 0.45) 100%) !important;
+  border: 1px solid rgba(243, 195, 178, 0.8) !important;
+}
+
+.stat-net {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(153, 205, 216, 0.45) 100%) !important;
+  border: 1px solid rgba(153, 205, 216, 0.7) !important;
+}
+
+.stat-records {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(253, 232, 211, 0.45) 100%) !important;
+  border: 1px solid rgba(253, 232, 211, 0.8) !important;
+}
+
+/* Mini Glass Meter Bars */
+.stat-glass-bar {
+  width: 100%;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: rgba(101, 113, 102, 0.08);
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.stat-glass-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fill-credit {
+  background: linear-gradient(90deg, #34d399, #10b981);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+.fill-debit {
+  background: linear-gradient(90deg, #fb923c, #ef4444);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+}
+
+.fill-sky {
+  background: linear-gradient(90deg, var(--pal-sky), #3b82f6);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.fill-sage {
+  background: linear-gradient(90deg, var(--pal-sage), var(--pal-slate));
+}
+
+/* Nova Glass Cash Flow Card */
+.nova-flow-card {
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: var(--shadow-glass);
+}
+
+.nova-flow-tags {
+  display: flex;
+  gap: 8px;
+}
+
+.nova-progress-track {
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(101, 113, 102, 0.08);
+  display: flex;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-top: 8px;
+}
+
+.nova-progress-fill-credit {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pal-sky) 0%, var(--pal-mint) 100%);
+  transition: width 0.6s ease;
+}
+
+.nova-progress-fill-debit {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pal-cream) 0%, var(--pal-peach) 100%);
+  transition: width 0.6s ease;
 }
 
 /* Activity Grid */
@@ -103,14 +242,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid rgba(101, 113, 102, 0.08);
 }
 
 .activity-row:last-child { border-bottom: none; }
 .activity-row.total {
   border-top: 2px solid var(--clr-border-light);
-  padding-top: 12px;
+  padding-top: 14px;
   font-weight: 700;
 }
 
@@ -149,7 +288,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
   border: 1px solid var(--clr-border);
   box-shadow: var(--shadow-sm);
   color: var(--clr-text-primary);

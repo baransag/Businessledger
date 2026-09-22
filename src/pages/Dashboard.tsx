@@ -84,7 +84,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
 
       {/* Current Balance — Hero Card */}
       <div className="balance-hero">
-        <div className="balance-hero-label">Current Balance</div>
+        <div className="hero-top-badge">
+          <span className="hero-status-dot" />
+          <span>FINANCIAL OVERVIEW · LIVE</span>
+        </div>
+        <div className="balance-hero-label">CURRENT BALANCE</div>
         <div className={`balance-hero-amount ${summary.closingBalancePaisa >= 0 ? 'positive' : 'negative'}`}>
           {formatPKR(summary.closingBalancePaisa)}
         </div>
@@ -94,44 +98,119 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid — Nova Glass Cards */}
       <div className="stats-grid mt-6">
+        {/* Card 01 — Total Credit */}
         <div className="stat-card stat-credit">
+          <div className="stat-card-header">
+            <span className="stat-num-badge">01</span>
+            <span className="stat-pill-tag tag-credit">● INFLOW</span>
+          </div>
           <div className="stat-label">Total Credit</div>
           <div className="stat-value amount-credit">{formatPKR(summary.totalCreditPaisa)}</div>
-          <div className="stat-sub">{active.filter(t => t.creditPaisa > 0).length} transactions</div>
+          <div className="stat-sub">
+            <span>{active.filter(t => t.creditPaisa > 0).length} transactions</span>
+          </div>
+          <div className="stat-glass-bar">
+            <div
+              className="stat-glass-fill fill-credit"
+              style={{ width: `${summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalCreditPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 50}%` }}
+            />
+          </div>
         </div>
+
+        {/* Card 02 — Total Debit */}
         <div className="stat-card stat-debit">
+          <div className="stat-card-header">
+            <span className="stat-num-badge">02</span>
+            <span className="stat-pill-tag tag-debit">● OUTFLOW</span>
+          </div>
           <div className="stat-label">Total Debit</div>
           <div className="stat-value amount-debit">{formatPKR(summary.totalDebitPaisa)}</div>
-          <div className="stat-sub">{active.filter(t => t.debitPaisa > 0).length} transactions</div>
+          <div className="stat-sub">
+            <span>{active.filter(t => t.debitPaisa > 0).length} transactions</span>
+          </div>
+          <div className="stat-glass-bar">
+            <div
+              className="stat-glass-fill fill-debit"
+              style={{ width: `${summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalDebitPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 50}%` }}
+            />
+          </div>
         </div>
-        <div className="stat-card">
+
+        {/* Card 03 — Net Movement */}
+        <div className="stat-card stat-net">
+          <div className="stat-card-header">
+            <span className="stat-num-badge">03</span>
+            <span className="stat-pill-tag tag-net">● NET POSITION</span>
+          </div>
           <div className="stat-label">Net Movement</div>
           <div className={`stat-value ${summary.netMovementPaisa >= 0 ? 'amount-credit' : 'amount-debit'}`}>
             {summary.netMovementPaisa >= 0 ? '+' : ''}{formatPKR(summary.netMovementPaisa)}
           </div>
-          <div className="stat-sub">Credit − Debit</div>
+          <div className="stat-sub">Credit − Debit difference</div>
+          <div className="stat-glass-bar">
+            <div
+              className="stat-glass-fill fill-sky"
+              style={{ width: summary.netMovementPaisa >= 0 ? '75%' : '35%' }}
+            />
+          </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Total Records</div>
+
+        {/* Card 04 — Total Records */}
+        <div className="stat-card stat-records">
+          <div className="stat-card-header">
+            <span className="stat-num-badge">04</span>
+            <span className="stat-pill-tag tag-records">● ALL RECORDS</span>
+          </div>
+          <div className="stat-label">Total Transactions</div>
           <div className="stat-value">{active.length}</div>
-          <div className="stat-sub">All transactions</div>
+          <div className="stat-sub">Active ledger entries</div>
+          <div className="stat-glass-bar">
+            <div className="stat-glass-fill fill-sage" style={{ width: '100%' }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Nova Glass Cash Flow Meter Card */}
+      <div className="card mt-6 nova-flow-card">
+        <div className="card-header flex justify-between items-center">
+          <div>
+            <div className="card-title">CASH FLOW DYNAMICS</div>
+            <p className="text-muted text-sm">Income vs Expense Distribution</p>
+          </div>
+          <div className="nova-flow-tags">
+            <span className="badge badge-credit">Inflow {summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalCreditPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 0}%</span>
+            <span className="badge badge-debit">Outflow {summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalDebitPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 0}%</span>
+          </div>
+        </div>
+        <div className="nova-progress-track">
+          <div
+            className="nova-progress-fill-credit"
+            style={{ width: `${summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalCreditPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 50}%` }}
+            title="Credit Share"
+          />
+          <div
+            className="nova-progress-fill-debit"
+            style={{ width: `${summary.totalCreditPaisa + summary.totalDebitPaisa > 0 ? Math.round((summary.totalDebitPaisa / (summary.totalCreditPaisa + summary.totalDebitPaisa)) * 100) : 50}%` }}
+            title="Debit Share"
+          />
         </div>
       </div>
 
       {/* Today & Month Activity */}
       <div className="activity-grid mt-6">
         <div className="card">
-          <div className="card-header">
+          <div className="card-header flex justify-between items-center">
             <div className="card-title">Today's Activity</div>
+            <span className="stat-num-badge">DAY</span>
           </div>
           <div className="activity-row">
-            <span className="text-muted text-sm">Credit</span>
+            <span className="text-muted text-sm">Credit (Received)</span>
             <span className="amount-credit font-semibold">{formatPKR(todayCredit)}</span>
           </div>
           <div className="activity-row">
-            <span className="text-muted text-sm">Debit</span>
+            <span className="text-muted text-sm">Debit (Paid)</span>
             <span className="amount-debit font-semibold">{formatPKR(todayDebit)}</span>
           </div>
           <div className="activity-row total">
@@ -140,15 +219,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
           </div>
         </div>
         <div className="card">
-          <div className="card-header">
+          <div className="card-header flex justify-between items-center">
             <div className="card-title">This Month</div>
+            <span className="stat-num-badge">MONTH</span>
           </div>
           <div className="activity-row">
-            <span className="text-muted text-sm">Credit</span>
+            <span className="text-muted text-sm">Credit (Received)</span>
             <span className="amount-credit font-semibold">{formatPKR(monthCredit)}</span>
           </div>
           <div className="activity-row">
-            <span className="text-muted text-sm">Debit</span>
+            <span className="text-muted text-sm">Debit (Paid)</span>
             <span className="amount-debit font-semibold">{formatPKR(monthDebit)}</span>
           </div>
           <div className="activity-row total">
