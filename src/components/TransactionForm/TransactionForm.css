@@ -1,58 +1,101 @@
-/* src/components/TransactionForm/TransactionForm.css */
+/* src/components/TransactionForm/TransactionForm.css — Nova Glass Styling */
 
 .txn-type-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
+  background: rgba(101, 113, 102, 0.06);
+  padding: 6px;
+  border-radius: var(--radius-pill);
 }
 
 .txn-type-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--clr-border);
-  background: transparent; cursor: pointer;
-  font-family: inherit; font-size: 0.9375rem; font-weight: 600;
-  color: var(--clr-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--clr-text-secondary);
   transition: all var(--transition);
 }
 
-.txn-type-btn:hover { border-color: var(--clr-border-light); color: var(--clr-text-primary); }
+.txn-type-btn:hover {
+  color: var(--clr-text-primary);
+  background: rgba(255, 255, 255, 0.5);
+}
 
 .txn-type-btn.credit.active {
-  border-color: var(--clr-green);
-  background: var(--clr-green-bg);
-  color: var(--clr-green);
+  border-color: rgba(35, 134, 88, 0.35);
+  background: #ffffff;
+  color: #1a6543;
+  box-shadow: 0 4px 14px rgba(35, 134, 88, 0.18);
 }
 
 .txn-type-btn.debit.active {
-  border-color: var(--clr-red);
-  background: var(--clr-red-bg);
-  color: var(--clr-red);
+  border-color: rgba(203, 84, 64, 0.35);
+  background: #ffffff;
+  color: #ba3d28;
+  box-shadow: 0 4px 14px rgba(203, 84, 64, 0.18);
 }
 
 /* Amount input */
 .amount-input-wrap {
   position: relative;
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
 }
+
 .amount-prefix {
-  position: absolute; left: 14px;
-  font-weight: 600; color: var(--clr-text-muted);
-  font-size: 0.9375rem; pointer-events: none; z-index: 1;
+  position: absolute;
+  left: 16px;
+  font-weight: 700;
+  color: var(--clr-text-secondary);
+  font-size: 1rem;
+  pointer-events: none;
+  z-index: 1;
 }
-.amount-input { padding-left: 40px !important; font-size: 1.125rem !important; font-weight: 700 !important; }
+
+.amount-input {
+  padding-left: 50px !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  color: var(--clr-text-primary) !important;
+  letter-spacing: -0.01em;
+}
 
 /* Select with add button */
-.select-with-add { display: flex; gap: 6px; align-items: center; }
-.select-with-add .form-select { flex: 1; }
+.select-with-add {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.select-with-add .form-select {
+  flex: 1;
+}
 
 /* New item row */
 .new-item-row {
-  display: flex; gap: 6px; margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
-.form-input-sm { padding: 6px 10px; font-size: 0.875rem; }
+
+.form-input-sm {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}
 
 @media (max-width: 480px) {
-  .txn-type-btn { font-size: 0.8125rem; padding: 10px 8px; }
+  .txn-type-btn {
+    font-size: 0.8125rem;
+    padding: 10px 8px;
+  }
 }

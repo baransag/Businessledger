@@ -27,14 +27,15 @@ const Login: React.FC = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError(null);
-    if (!email.trim()) { setLocalError('Please enter your email address.'); return; }
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) { setLocalError('Please enter your email address.'); return; }
     if (!password) { setLocalError('Please enter your password.'); return; }
     if (!isSupabaseConfigured) {
       setLocalError('Cloud authentication is not configured. Please add Supabase credentials to .env file.');
       return;
     }
     setLoading(true);
-    const { error } = await signIn(email.trim(), password);
+    const { error } = await signIn(cleanEmail, password);
     setLoading(false);
     if (!error) navigate('/dashboard', { replace: true });
   };
