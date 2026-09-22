@@ -1,0 +1,170 @@
+/* src/components/DuroodBanner/DuroodBanner.css */
+
+.durood-banner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--clr-islamic-bg);
+  border-bottom: 1px solid rgba(212,168,67,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--banner-height);
+  padding: 10px 48px 10px 16px;
+  transition: all var(--transition-slow);
+}
+
+/* Geometric Pattern Background */
+.durood-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(212,168,67,0.04) 0px,
+      rgba(212,168,67,0.04) 1px,
+      transparent 1px,
+      transparent 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(212,168,67,0.04) 0px,
+      rgba(212,168,67,0.04) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  pointer-events: none;
+}
+
+/* Shimmer overlay */
+.durood-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212,168,67,0.08) 45%,
+    rgba(240,192,96,0.15) 50%,
+    rgba(212,168,67,0.08) 55%,
+    transparent 100%
+  );
+  animation: bannerShimmer 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes bannerShimmer {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+/* Content */
+.durood-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.durood-ornament {
+  position: absolute;
+  color: rgba(212,168,67,0.3);
+  font-size: 1.25rem;
+  animation: ornamentPulse 4s ease-in-out infinite;
+}
+.durood-ornament.left  { left: 16px; }
+.durood-ornament.right { right: 56px; }
+
+@keyframes ornamentPulse {
+  0%,100% { opacity: 0.3; transform: scale(1); }
+  50%     { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Arabic Text */
+.durood-arabic {
+  font-family: 'Noto Nastaliq Urdu', 'Traditional Arabic', 'Scheherazade New', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--clr-gold-light);
+  direction: rtl;
+  unicode-bidi: bidi-override;
+  letter-spacing: 0.02em;
+  line-height: 1.8;
+  text-shadow: 0 0 20px rgba(212,168,67,0.4);
+  animation: arabicGlow 4s ease-in-out infinite;
+}
+
+@keyframes arabicGlow {
+  0%,100% { text-shadow: 0 0 10px rgba(212,168,67,0.3); }
+  50%     { text-shadow: 0 0 24px rgba(240,192,96,0.6), 0 0 48px rgba(212,168,67,0.2); }
+}
+
+.durood-label {
+  font-size: 0.6875rem;
+  color: rgba(212,168,67,0.65);
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+/* Close Button */
+.durood-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(212,168,67,0.12);
+  border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 50%;
+  color: rgba(212,168,67,0.6);
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  z-index: 2;
+  font-size: 14px;
+}
+.durood-close:hover {
+  background: rgba(212,168,67,0.25);
+  color: var(--clr-gold-light);
+  border-color: rgba(212,168,67,0.5);
+}
+
+/* Collapsed State */
+.durood-restore {
+  width: 100%;
+  background: var(--clr-islamic-bg);
+  border-bottom: 1px solid rgba(212,168,67,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  cursor: pointer;
+  gap: 6px;
+  font-size: 0.6875rem;
+  color: rgba(212,168,67,0.5);
+  transition: all var(--transition);
+  min-height: 20px;
+}
+.durood-restore:hover {
+  background: rgba(212,168,67,0.06);
+  color: var(--clr-gold);
+}
+.durood-restore span {
+  font-family: 'Noto Nastaliq Urdu', serif;
+  font-size: 0.75rem;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .durood-arabic { font-size: 0.9rem; }
+  .durood-ornament { display: none; }
+  .durood-banner { padding: 8px 44px 8px 8px; min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .durood-shimmer { animation: none; }
+  .durood-arabic  { animation: none; }
+  .durood-ornament { animation: none; }
+}

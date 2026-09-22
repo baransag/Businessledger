@@ -1,0 +1,21 @@
+/* src/pages/Ledger.css */
+.ledger-page { max-width: 1200px; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.filters-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.ledger-summary {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--clr-bg-secondary);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+.row-actions { display: flex; gap: 4px; }
+.text-danger { color: var(--clr-red) !important; }
+@media (max-width: 768px) {
+  .filters-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .filters-grid { grid-template-columns: 1fr; }
+}

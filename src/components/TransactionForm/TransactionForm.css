@@ -1,0 +1,58 @@
+/* src/components/TransactionForm/TransactionForm.css */
+
+.txn-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.txn-type-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--clr-border);
+  background: transparent; cursor: pointer;
+  font-family: inherit; font-size: 0.9375rem; font-weight: 600;
+  color: var(--clr-text-muted);
+  transition: all var(--transition);
+}
+
+.txn-type-btn:hover { border-color: var(--clr-border-light); color: var(--clr-text-primary); }
+
+.txn-type-btn.credit.active {
+  border-color: var(--clr-green);
+  background: var(--clr-green-bg);
+  color: var(--clr-green);
+}
+
+.txn-type-btn.debit.active {
+  border-color: var(--clr-red);
+  background: var(--clr-red-bg);
+  color: var(--clr-red);
+}
+
+/* Amount input */
+.amount-input-wrap {
+  position: relative;
+  display: flex; align-items: center;
+}
+.amount-prefix {
+  position: absolute; left: 14px;
+  font-weight: 600; color: var(--clr-text-muted);
+  font-size: 0.9375rem; pointer-events: none; z-index: 1;
+}
+.amount-input { padding-left: 40px !important; font-size: 1.125rem !important; font-weight: 700 !important; }
+
+/* Select with add button */
+.select-with-add { display: flex; gap: 6px; align-items: center; }
+.select-with-add .form-select { flex: 1; }
+
+/* New item row */
+.new-item-row {
+  display: flex; gap: 6px; margin-top: 6px;
+}
+.form-input-sm { padding: 6px 10px; font-size: 0.875rem; }
+
+@media (max-width: 480px) {
+  .txn-type-btn { font-size: 0.8125rem; padding: 10px 8px; }
+}

@@ -1,0 +1,95 @@
+/* src/pages/Dashboard.css */
+
+.dashboard { max-width: 1100px; }
+
+.dashboard-loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 16px;
+  min-height: 400px; color: var(--clr-text-muted);
+}
+
+.dashboard-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+}
+.dashboard-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Balance Hero */
+.balance-hero {
+  background: linear-gradient(135deg, #1a2a50 0%, #0d1a3a 60%, #101828 100%);
+  border: 1px solid rgba(79,142,247,0.25);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  text-align: center;
+  position: relative; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(79,142,247,0.1);
+}
+.balance-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% -20%, rgba(79,142,247,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.balance-hero-label {
+  font-size: 0.8125rem; font-weight: 600;
+  color: var(--clr-text-muted);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.balance-hero-amount {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.balance-hero-amount.positive { color: var(--clr-green); }
+.balance-hero-amount.negative { color: var(--clr-red); }
+.balance-hero-sub {
+  margin-top: 10px;
+  font-size: 0.8125rem; color: var(--clr-text-muted);
+}
+
+/* Stat cards */
+.stat-credit { border-left: 3px solid var(--clr-green) !important; }
+.stat-debit  { border-left: 3px solid var(--clr-red) !important; }
+
+/* Activity Grid */
+.activity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.activity-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid var(--clr-border);
+}
+.activity-row:last-child { border-bottom: none; }
+.activity-row.total { border-top: 1px solid var(--clr-border-light); padding-top: 10px; }
+
+/* Chart legend */
+.chart-legend {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.75rem; color: var(--clr-text-muted);
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; display: inline-block;
+}
+.legend-dot.credit { background: var(--clr-green); }
+.legend-dot.debit  { background: var(--clr-red); }
+
+/* Quick Actions */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.quick-action-btn {
+  flex-direction: column; gap: 6px; padding: 16px 12px;
+  font-size: 0.8125rem;
+}
+.quick-action-icon {
+  font-size: 1.25rem; line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .activity-grid { grid-template-columns: 1fr; }
+  .balance-hero { padding: 24px 16px; }
+  .quick-actions-grid { grid-template-columns: repeat(3, 1fr); }
+  .quick-action-btn { padding: 12px 6px; font-size: 0.75rem; }
+}
