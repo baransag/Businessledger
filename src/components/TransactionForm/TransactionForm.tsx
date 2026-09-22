@@ -48,7 +48,6 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
       errs.amount = 'Enter a valid positive amount.';
     if (!partyName.trim()) errs.partyName = 'Party name is required.';
-    if (!description.trim()) errs.description = 'Description is required.';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -56,16 +55,16 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    if (!user) return;
 
     setLoading(true);
     const paisaAmount = rupeesToPaisa(Number(amount));
 
     try {
+      const finalDescription = description.trim() || (type === 'credit' ? 'Payment Received' : 'Payment Made');
       const data = {
         date,
         partyName: partyName.trim(),
-        description: description.trim(),
+        description: finalDescription,
         category,
         paymentMethod,
         referenceNumber: referenceNumber.trim(),
@@ -82,8 +81,9 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
         toast.success(`${type === 'credit' ? 'Credit' : 'Debit'} of Rs. ${Number(amount).toLocaleString()} added`);
       }
       onClose();
-    } catch {
-      toast.error('Unable to save transaction. Please try again.');
+    } catch (err) {
+      console.error('Failed to save transaction:', err);
+      toast.error('Unable to save transaction. Please check details.');
     } finally {
       setLoading(false);
     }
@@ -191,7 +191,7 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
               {/* Description */}
               <div className="form-group">
                 <label className="form-label" htmlFor="txn-desc">
-                  Description <span className="required">*</span>
+                  Description
                 </label>
                 <input
                   id="txn-desc"
