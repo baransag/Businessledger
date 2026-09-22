@@ -99,8 +99,21 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="txn-form-title">
-        <div className="modal-header">
+      <div
+        className="modal modal-lg"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="txn-form-title"
+        style={{
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          width: '100%',
+          maxWidth: '540px',
+        }}
+      >
+        <div className="modal-header" style={{ flexShrink: 0 }}>
           <h3 id="txn-form-title">
             {editTransaction ? 'Edit Transaction' : 'Add Transaction'}
           </h3>
@@ -109,8 +122,27 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="modal-body">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+            minHeight: 0,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            className="modal-body"
+            style={{
+              overflowY: 'auto',
+              flex: 1,
+              minHeight: 0,
+              padding: '20px 24px',
+              maxHeight: 'calc(85vh - 130px)',
+            }}
+          >
             {/* Type Selector */}
             <div className="txn-type-selector">
               <button
@@ -290,7 +322,24 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div
+            className="modal-footer"
+            style={{
+              flexShrink: 0,
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 30,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 12,
+              padding: '14px 24px',
+              borderTop: '1px solid rgba(101, 113, 102, 0.15)',
+              background: 'rgba(245, 248, 247, 0.98)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+            }}
+          >
             <button type="button" className="btn btn-ghost" onClick={onClose} disabled={loading}>
               Cancel
             </button>

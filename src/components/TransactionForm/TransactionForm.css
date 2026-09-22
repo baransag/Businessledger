@@ -93,9 +93,23 @@
   font-size: 0.8125rem;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 520px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
 @media (max-width: 480px) {
   .txn-type-btn {
     font-size: 0.8125rem;
     padding: 10px 8px;
   }
 }
+
