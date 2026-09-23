@@ -5,6 +5,7 @@ import { useAccountStore, AccountWithBalance } from '../stores/accountStore';
 import { useTransactionStore } from '../stores/transactionStore';
 import { useAuthStore } from '../stores/authStore';
 import { formatPKR } from '../utils/money';
+import { BankLogo } from '../components/BankLogo/BankLogo';
 import './Accounts.css';
 
 interface AccountsProps {
@@ -96,11 +97,12 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
       </div>
 
       {/* Account Cards Grid */}
-      <div className="accounts-grid">
-        {filteredAccounts.map((account) => (
+      <div className="stats-grid">
+        {filteredAccounts.map((account, index) => (
           <AccountCard
             key={account.id}
             account={account}
+            index={index}
             onClick={() => navigate(`/accounts/${account.id}`)}
           />
         ))}
@@ -121,69 +123,56 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
   );
 };
 
-// ─── Account Card Component ──────────────────────────────────────────
+// ─── Account Card Component (Nova Glass) ─────────────────────────────
 
 interface AccountCardProps {
   account: AccountWithBalance;
+  index: number;
   onClick: () => void;
 }
 
-const AccountCard: React.FC<AccountCardProps> = ({ account, onClick }) => {
+const AccountCard: React.FC<AccountCardProps> = ({ account, index, onClick }) => {
   const total = account.totalCredit + account.totalDebit;
   const inPercent = total > 0 ? Math.round((account.totalCredit / total) * 100) : 50;
 
   return (
     <div
-      className={`account-card ${!account.isActive ? 'inactive' : ''}`}
+      className={`stat-card account-card-nova ${!account.isActive ? 'inactive' : ''}`}
       onClick={onClick}
       style={{ '--acct-color': account.color } as React.CSSProperties}
+      title={`View ${account.name} Ledger`}
     >
-      {/* Color accent bar */}
-      <style>{`
-        .account-card[style*="${account.color}"]::before {
-          background: ${account.color};
-        }
-      `}</style>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: account.color, borderRadius: '16px 16px 0 0' }} />
-
-      <div className="account-card-top">
-        <div
-          className="account-icon-wrap"
-          style={{ background: `${account.color}18` }}
-        >
-          {account.icon}
+      <div
+        className="account-card-top-bar"
+        style={{ background: account.color }}
+      />
+      <div className="stat-card-header">
+        <div className="flex items-center gap-2">
+          <BankLogo accountName={account.name} type={account.type} size={36} />
+          <span className="stat-num-badge">
+            {String(index + 1).padStart(2, '0')}
+          </span>
         </div>
-        <span className={`account-type-badge ${account.type}`}>
-          {account.type === 'wallet' ? '📱 Wallet' : '🏦 Bank'}
+        <span className={`stat-pill-tag ${account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
+          ● {account.type === 'wallet' ? 'WALLET' : 'BANK'}
         </span>
       </div>
 
-      <div className="account-card-name">{account.name}</div>
-      <div className={`account-card-balance ${account.balance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+      <div className="account-card-name-title">{account.name}</div>
+      <div className="stat-label">CURRENT BALANCE</div>
+      <div className={`stat-value ${account.balance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
         {formatPKR(account.balance)}
       </div>
 
-      <div className="account-card-row">
-        <span className="label">Money In</span>
-        <span className="value credit">{formatPKR(account.totalCredit)}</span>
-      </div>
-      <div className="account-card-row">
-        <span className="label">Money Out</span>
-        <span className="value debit">{formatPKR(account.totalDebit)}</span>
-      </div>
-      <div className="account-card-row">
-        <span className="label">Transactions</span>
-        <span className="value">{account.txnCount}</span>
+      <div className="stat-sub account-stat-sub">
+        <span style={{ color: 'var(--clr-green)' }}>↓ In: {formatPKR(account.totalCredit)}</span>
+        <span style={{ color: 'var(--clr-red)' }}>↑ Out: {formatPKR(account.totalDebit)}</span>
       </div>
 
-      <div className="account-card-bar">
+      <div className="stat-glass-bar" style={{ marginTop: 12 }}>
         <div
-          className="fill-in"
-          style={{ width: `${inPercent}%`, background: account.color }}
-        />
-        <div
-          className="fill-out"
-          style={{ width: `${100 - inPercent}%` }}
+          className="stat-glass-fill"
+          style={{ width: `${inPercent}%`, background: account.color || 'var(--pal-teal)' }}
         />
       </div>
     </div>

@@ -6,6 +6,7 @@ import { useTransactionStore } from '../stores/transactionStore';
 import { useAuthStore } from '../stores/authStore';
 import { formatPKR, paisaToRupees, rupeesToPaisa } from '../utils/money';
 import { formatDisplayDate } from '../utils/dateUtils';
+import { BankLogo } from '../components/BankLogo/BankLogo';
 import toast from 'react-hot-toast';
 import './AccountDetail.css';
 
@@ -88,7 +89,9 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
       {/* Hero Card */}
       <div className="account-hero" style={{ background: `linear-gradient(135deg, ${account.color}, ${account.color}CC)` }}>
         <div className="account-hero-top">
-          <div className="account-hero-icon">{account.icon}</div>
+          <div className="account-hero-icon" style={{ background: 'transparent', padding: 0 }}>
+            <BankLogo accountName={account.name} type={account.type} size={48} />
+          </div>
           <span className="account-hero-badge">
             {account.type === 'wallet' ? '📱 Digital Wallet' : '🏦 Bank Account'}
           </span>

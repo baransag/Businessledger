@@ -1,9 +1,9 @@
-// src/pages/Dashboard.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactionStore } from '../stores/transactionStore';
 import { useAccountStore } from '../stores/accountStore';
 import { useAuthStore } from '../stores/authStore';
+import { BankLogo } from '../components/BankLogo/BankLogo';
 import { calculateSummary, calculateRunningBalances } from '../utils/balance';
 import { formatPKR } from '../utils/money';
 import { formatDisplayDate, todayISO, startOfMonth } from '../utils/dateUtils';
@@ -21,16 +21,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
   const openingBalance = settings?.openingBalancePaisa ?? 0;
 
   // Accounts overview
+  const [accountFilter, setAccountFilter] = useState<'all' | 'bank' | 'wallet'>('all');
   const { accounts } = useAccountStore();
   const getAccountsWithBalance = useAccountStore(s => s.getAccountsWithBalance);
   const accountsWithBalance = useMemo(
     () => getAccountsWithBalance(transactions),
     [accounts, transactions]
   );
-  const topAccounts = useMemo(
-    () => accountsWithBalance.filter(a => a.isActive).slice(0, 4),
-    [accountsWithBalance]
-  );
+  const displayedAccounts = useMemo(() => {
+    const activeAccounts = accountsWithBalance.filter(a => a.isActive);
+    if (accountFilter === 'all') return activeAccounts;
+    return activeAccounts.filter(a => a.type === accountFilter);
+  }, [accountsWithBalance, accountFilter]);
 
   const summary = useMemo(() => calculateSummary(active, openingBalance), [active, openingBalance]);
 
@@ -185,49 +187,97 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
         </div>
       </div>
 
-      {/* ─── Accounts Overview ──────────────────────────────────── */}
-      {topAccounts.length > 0 && (
-        <div className="card mt-6">
-          <div className="card-header flex justify-between items-center">
-            <div className="card-title">Accounts Overview</div>
-            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/accounts')}>
-              View All
-            </button>
-          </div>
-          <div className="accounts-grid" style={{ padding: '4px 0' }}>
-            {topAccounts.map(account => (
-              <div
-                key={account.id}
-                className="account-card"
-                onClick={() => navigate(`/accounts/${account.id}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: account.color, borderRadius: '16px 16px 0 0' }} />
-                <div className="account-card-top">
-                  <div
-                    className="account-icon-wrap"
-                    style={{ background: `${account.color}18` }}
-                  >
-                    {account.icon}
-                  </div>
-                  <span className={`account-type-badge ${account.type}`}>
-                    {account.type === 'wallet' ? '📱 Wallet' : '🏦 Bank'}
-                  </span>
-                </div>
-                <div className="account-card-name">{account.name}</div>
-                <div className={`account-card-balance ${account.balance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
-                  {formatPKR(account.balance)}
-                </div>
-                <div className="account-card-row">
-                  <span className="label">In</span>
-                  <span className="value credit">{formatPKR(account.totalCredit)}</span>
-                </div>
-                <div className="account-card-row">
-                  <span className="label">Out</span>
-                  <span className="value debit">{formatPKR(account.totalDebit)}</span>
-                </div>
+      {/* ─── Accounts Overview (Nova Glass Cards) ──────────────────── */}
+      {accountsWithBalance.length > 0 && (
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+            <div>
+              <div className="card-title" style={{ fontSize: '1.05rem', letterSpacing: '0.04em' }}>
+                ACCOUNTS OVERVIEW
               </div>
-            ))}
+              <p className="text-muted text-xs">Live balances & real-time activity across banks & digital wallets</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                className={`btn btn-sm ${accountFilter === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setAccountFilter('all')}
+                style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
+              >
+                All ({accountsWithBalance.filter(a => a.isActive).length})
+              </button>
+              <button
+                className={`btn btn-sm ${accountFilter === 'bank' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setAccountFilter('bank')}
+                style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
+              >
+                Banks ({accountsWithBalance.filter(a => a.isActive && a.type === 'bank').length})
+              </button>
+              <button
+                className={`btn btn-sm ${accountFilter === 'wallet' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setAccountFilter('wallet')}
+                style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
+              >
+                Wallets ({accountsWithBalance.filter(a => a.isActive && a.type === 'wallet').length})
+              </button>
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => navigate('/accounts')}
+                style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
+              >
+                Manage All →
+              </button>
+            </div>
+          </div>
+
+          <div className="stats-grid">
+            {displayedAccounts.map((account, index) => {
+              const totalInOut = account.totalCredit + account.totalDebit;
+              const inPercent = totalInOut > 0 ? Math.round((account.totalCredit / totalInOut) * 100) : 50;
+
+              return (
+                <div
+                  key={account.id}
+                  className="stat-card account-card-nova"
+                  onClick={() => navigate(`/accounts/${account.id}`)}
+                  title={`View ${account.name} Ledger`}
+                >
+                  <div
+                    className="account-card-top-bar"
+                    style={{ background: account.color }}
+                  />
+                  <div className="stat-card-header">
+                    <div className="flex items-center gap-2">
+                      <BankLogo accountName={account.name} type={account.type} size={36} />
+                      <span className="stat-num-badge">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <span className={`stat-pill-tag ${account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
+                      ● {account.type === 'wallet' ? 'WALLET' : 'BANK'}
+                    </span>
+                  </div>
+
+                  <div className="account-card-name-title">{account.name}</div>
+                  <div className="stat-label">CURRENT BALANCE</div>
+                  <div className={`stat-value ${account.balance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+                    {formatPKR(account.balance)}
+                  </div>
+                  <div className="stat-sub account-stat-sub">
+                    <span style={{ color: 'var(--clr-green)' }}>↓ In: {formatPKR(account.totalCredit)}</span>
+                    <span style={{ color: 'var(--clr-red)' }}>↑ Out: {formatPKR(account.totalDebit)}</span>
+                  </div>
+                  <div className="stat-glass-bar">
+                    <div
+                      className="stat-glass-fill"
+                      style={{
+                        width: `${inPercent}%`,
+                        background: account.color || 'var(--pal-teal)',
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
