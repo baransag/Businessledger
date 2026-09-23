@@ -7,6 +7,8 @@ import { useAuthStore } from '../stores/authStore';
 import { formatPKR, paisaToRupees, rupeesToPaisa } from '../utils/money';
 import { formatDisplayDate } from '../utils/dateUtils';
 import { BankLogo } from '../components/BankLogo/BankLogo';
+import TransactionForm from '../components/TransactionForm/TransactionForm';
+import type { Transaction } from '../db/schema';
 import toast from 'react-hot-toast';
 import './AccountDetail.css';
 
@@ -19,8 +21,11 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { accounts, updateAccount } = useAccountStore();
-  const { transactions } = useTransactionStore();
+  const { transactions, softDeleteTransaction } = useTransactionStore();
   const userId = user?.id || 'local-user';
+
+  const [editTxn, setEditTxn] = useState<Transaction | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<Transaction | null>(null);
 
   const account = useMemo(
     () => accounts.find(a => a.id === accountId),
@@ -183,6 +188,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
                   <th>Description</th>
                   <th className="text-right">Debit</th>
                   <th className="text-right">Credit</th>
+                  <th style={{ width: 90, textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,6 +209,24 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
                         : <span className="text-muted">—</span>
                       }
                     </td>
+                    <td>
+                      <div className="row-actions" style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                        <button
+                          className="btn btn-ghost btn-icon btn-sm"
+                          title="Edit transaction / Change account"
+                          onClick={() => setEditTxn(t)}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-icon btn-sm text-danger"
+                          title="Delete transaction"
+                          onClick={() => setDeleteConfirm(t)}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -210,6 +234,45 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
           </div>
         )}
       </div>
+
+      {/* Edit Transaction Modal */}
+      {editTxn && (
+        <TransactionForm
+          onClose={() => setEditTxn(null)}
+          editTransaction={editTxn}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="modal-backdrop" style={{ zIndex: 1000 }}>
+          <div className="modal" style={{ maxWidth: 420 }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Delete Transaction?</h3>
+              <button className="btn btn-ghost btn-icon" onClick={() => setDeleteConfirm(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this transaction for <strong>{deleteConfirm.partyName}</strong>?</p>
+              <p className="text-muted text-sm" style={{ marginTop: 8 }}>
+                Amount: {formatPKR(deleteConfirm.creditPaisa || deleteConfirm.debitPaisa)} · Date: {formatDisplayDate(deleteConfirm.date)}
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+              <button
+                className="btn btn-danger"
+                onClick={async () => {
+                  await softDeleteTransaction(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                  toast.success('Transaction deleted');
+                }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

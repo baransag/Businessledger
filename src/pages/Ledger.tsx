@@ -5,6 +5,8 @@ import { calculateRunningBalances } from '../utils/balance';
 import { formatPKR } from '../utils/money';
 import { formatDisplayDate } from '../utils/dateUtils';
 import type { Transaction } from '../db/schema';
+import { useAccountStore } from '../stores/accountStore';
+import { BankLogo } from '../components/BankLogo/BankLogo';
 import TransactionForm from '../components/TransactionForm/TransactionForm';
 import toast from 'react-hot-toast';
 import './Ledger.css';
@@ -14,6 +16,8 @@ const PAGE_SIZE = 50;
 const Ledger: React.FC = () => {
   const { transactions, settings, filters, setFilters, clearFilters, filteredTransactions,
     softDeleteTransaction, categories, paymentMethods } = useTransactionStore();
+  const { accounts } = useAccountStore();
+  const [accountFilter, setAccountFilter] = useState('');
   const [editTxn, setEditTxn] = useState<Transaction | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
@@ -45,11 +49,12 @@ const Ledger: React.FC = () => {
       if (filters.party && !t.partyName.toLowerCase().includes(filters.party.toLowerCase())) return false;
       if (filters.category && t.category !== filters.category) return false;
       if (filters.paymentMethod && t.paymentMethod !== filters.paymentMethod) return false;
+      if (accountFilter && t.accountId !== accountFilter) return false;
       if (filters.type === 'credit' && t.creditPaisa === 0) return false;
       if (filters.type === 'debit'  && t.debitPaisa === 0)  return false;
       return true;
     });
-  }, [withBalance, filters]);
+  }, [withBalance, filters, accountFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -121,6 +126,14 @@ const Ledger: React.FC = () => {
             </select>
           </div>
           <div className="form-group">
+            <label className="form-label">Account</label>
+            <select className="form-select" value={accountFilter}
+              onChange={e => { setAccountFilter(e.target.value); setPage(1); }}>
+              <option value="">All Accounts</option>
+              {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
             <label className="form-label">Type</label>
             <select className="form-select" value={filters.type}
               onChange={e => { setFilters({ type: e.target.value as 'all'|'credit'|'debit' }); setPage(1); }}>
@@ -132,7 +145,7 @@ const Ledger: React.FC = () => {
         </div>
         <div className="filters-footer">
           <span className="text-muted text-sm">{filtered.length} results</span>
-          <button className="btn btn-ghost btn-sm" onClick={() => { clearFilters(); setPage(1); }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => { clearFilters(); setAccountFilter(''); setPage(1); }}>
             Clear Filters
           </button>
         </div>
@@ -166,6 +179,7 @@ const Ledger: React.FC = () => {
                   <th>Description</th>
                   <th>Category</th>
                   <th>Method</th>
+                  <th>Account</th>
                   <th>Ref</th>
                   <th className="text-right">Debit</th>
                   <th className="text-right">Credit</th>
@@ -181,6 +195,22 @@ const Ledger: React.FC = () => {
                     <td className="text-muted text-sm">{t.description}</td>
                     <td>{t.category ? <span className="badge badge-blue">{t.category}</span> : <span className="text-muted">—</span>}</td>
                     <td className="text-sm text-muted">{t.paymentMethod || '—'}</td>
+                    <td>
+                      {t.accountId ? (
+                        (() => {
+                          const acc = accounts.find(a => a.id === t.accountId);
+                          if (!acc) return <span className="text-muted">—</span>;
+                          return (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 600 }}>
+                              <BankLogo accountName={acc.name} type={acc.type} size={18} />
+                              <span>{acc.name}</span>
+                            </div>
+                          );
+                        })()
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
                     <td className="text-sm text-muted">{t.referenceNumber || '—'}</td>
                     <td className="text-right">{t.debitPaisa > 0 ? <span className="amount-debit">{formatPKR(t.debitPaisa)}</span> : <span className="text-muted">—</span>}</td>
                     <td className="text-right">{t.creditPaisa > 0 ? <span className="amount-credit">{formatPKR(t.creditPaisa)}</span> : <span className="text-muted">—</span>}</td>
@@ -202,7 +232,7 @@ const Ledger: React.FC = () => {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={6} className="font-semibold">Page Total</td>
+                  <td colSpan={7} className="font-semibold">Page Total</td>
                   <td className="text-right amount-debit">{formatPKR(paged.reduce((s,t) => s+t.debitPaisa, 0))}</td>
                   <td className="text-right amount-credit">{formatPKR(paged.reduce((s,t) => s+t.creditPaisa, 0))}</td>
                   <td className="text-right amount-balance">{paged.length > 0 ? formatPKR(paged[paged.length - 1].runningBalance) : '—'}</td>
