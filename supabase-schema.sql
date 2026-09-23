@@ -103,3 +103,46 @@ create policy "Users manage own payment_methods" on public.payment_methods
 -- ─────────────────────────────────────────
 -- DONE! Your database is ready.
 -- ─────────────────────────────────────────
+
+-- ═══════════════════════════════════════════
+-- V2 MIGRATION — Financial Accounts Feature
+-- ═══════════════════════════════════════════
+
+-- ─────────────────────────────────────────
+-- 7. ACCOUNTS TABLE
+-- ─────────────────────────────────────────
+create table if not exists public.accounts (
+  id                    text        primary key,
+  user_id               uuid        not null references auth.users(id) on delete cascade,
+  name                  text        not null,
+  type                  text        not null default 'bank',
+  icon                  text        not null default '🏦',
+  color                 text        not null default '#4A90D9',
+  opening_balance_paisa bigint      not null default 0,
+  is_active             boolean     not null default true,
+  created_at            bigint      not null,
+  updated_at            bigint      not null,
+  sync_status           text        not null default 'synced'
+);
+
+-- ─────────────────────────────────────────
+-- 8. ADD ACCOUNT COLUMNS TO TRANSACTIONS
+-- ─────────────────────────────────────────
+alter table public.transactions add column if not exists account_id  text not null default '';
+alter table public.transactions add column if not exists transfer_id text not null default '';
+
+-- ─────────────────────────────────────────
+-- 9. INDEXES for accounts
+-- ─────────────────────────────────────────
+create index if not exists idx_accounts_user_id         on public.accounts(user_id);
+create index if not exists idx_transactions_account_id  on public.transactions(account_id);
+create index if not exists idx_transactions_transfer_id on public.transactions(transfer_id);
+
+-- ─────────────────────────────────────────
+-- 10. RLS for accounts
+-- ─────────────────────────────────────────
+alter table public.accounts enable row level security;
+
+create policy "Users manage own accounts" on public.accounts
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+

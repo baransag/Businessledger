@@ -4,7 +4,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { db } from '../db/db';
-import type { Transaction, AppSettings, Category, PaymentMethod } from '../db/schema';
+import type { Transaction, AppSettings, Category, PaymentMethod, Account } from '../db/schema';
 
 export interface SyncResult {
   pushed: number;
@@ -32,6 +32,8 @@ function txnToRow(t: Transaction) {
     deleted_at:       t.deletedAt,
     created_at:       t.createdAt,
     updated_at:       t.updatedAt,
+    account_id:       t.accountId || '',
+    transfer_id:      t.transferId || '',
     sync_status:      'synced',
   };
 }
@@ -53,6 +55,8 @@ function rowToTxn(row: Record<string, unknown>): Transaction {
     deletedAt:       row.deleted_at as number | null,
     createdAt:       Number(row.created_at),
     updatedAt:       Number(row.updated_at),
+    accountId:       (row.account_id as string) || '',
+    transferId:      (row.transfer_id as string) || '',
     syncStatus:      'synced',
   };
 }
@@ -172,6 +176,9 @@ export async function syncTransactions(userId: string): Promise<SyncResult> {
     // ── SYNC PAYMENT METHODS ─────────────────────────────────────────
     await syncPaymentMethods(userId);
 
+    // ── SYNC ACCOUNTS ────────────────────────────────────────────────
+    await syncAccounts(userId);
+
     // Update lastSyncAt in settings
     await db.settings.update('singleton', { lastSyncAt: Date.now() });
 
@@ -270,6 +277,83 @@ async function syncPaymentMethods(userId: string): Promise<void> {
           name: row.name as string,
           isDefault: Boolean(row.is_default),
           createdAt: Number(row.created_at),
+        });
+      }
+    }
+  }
+}
+
+// ─── Account Sync ────────────────────────────────────────────────────
+
+function accountToRow(a: Account) {
+  return {
+    id:                    a.id,
+    user_id:               a.userId,
+    name:                  a.name,
+    type:                  a.type,
+    icon:                  a.icon,
+    color:                 a.color,
+    opening_balance_paisa: a.openingBalancePaisa,
+    is_active:             a.isActive,
+    created_at:            a.createdAt,
+    updated_at:            a.updatedAt,
+    sync_status:           'synced',
+  };
+}
+
+async function syncAccounts(userId: string): Promise<void> {
+  if (!supabase) return;
+
+  // Push local pending accounts
+  const localAccounts = await db.accounts
+    .where('userId').equals(userId)
+    .toArray();
+
+  const pending = localAccounts.filter(a => a.syncStatus === 'pending');
+  if (pending.length > 0) {
+    await supabase.from('accounts').upsert(
+      pending.map(accountToRow),
+      { onConflict: 'id' }
+    );
+    await Promise.all(
+      pending.map(a => db.accounts.update(a.id, { syncStatus: 'synced' }))
+    );
+  }
+
+  // Pull remote accounts
+  const { data } = await supabase
+    .from('accounts')
+    .select('*')
+    .eq('user_id', userId);
+
+  if (data) {
+    for (const row of data) {
+      const existing = await db.accounts.get(row.id as string);
+      if (!existing) {
+        await db.accounts.add({
+          id: row.id as string,
+          userId: row.user_id as string,
+          name: row.name as string,
+          type: (row.type as 'bank' | 'wallet') || 'bank',
+          icon: (row.icon as string) || '🏦',
+          color: (row.color as string) || '#4A90D9',
+          openingBalancePaisa: Number(row.opening_balance_paisa) || 0,
+          isActive: row.is_active !== false,
+          createdAt: Number(row.created_at),
+          updatedAt: Number(row.updated_at),
+          syncStatus: 'synced',
+        });
+      } else if (Number(row.updated_at) > existing.updatedAt) {
+        await db.accounts.put({
+          ...existing,
+          name: row.name as string,
+          type: (row.type as 'bank' | 'wallet') || 'bank',
+          icon: (row.icon as string) || '🏦',
+          color: (row.color as string) || '#4A90D9',
+          openingBalancePaisa: Number(row.opening_balance_paisa) || 0,
+          isActive: row.is_active !== false,
+          updatedAt: Number(row.updated_at),
+          syncStatus: 'synced',
         });
       }
     }

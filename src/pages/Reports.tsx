@@ -1,6 +1,7 @@
 // src/pages/Reports.tsx
 import React, { useMemo, useState } from 'react';
 import { useTransactionStore } from '../stores/transactionStore';
+import { useAccountStore } from '../stores/accountStore';
 import { calculateSummary, calculateRunningBalances } from '../utils/balance';
 import { formatPKR } from '../utils/money';
 import { formatDisplayDate, todayISO, startOfMonth, endOfMonth, startOfWeek, startOfYear, dayjs } from '../utils/dateUtils';
@@ -13,11 +14,17 @@ type ReportType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 const Reports: React.FC = () => {
   const { transactions, settings } = useTransactionStore();
+  const { accounts } = useAccountStore();
   const [reportType, setReportType] = useState<ReportType>('monthly');
   const [customFrom, setCustomFrom] = useState(startOfMonth());
   const [customTo,   setCustomTo]   = useState(todayISO());
+  const [filterAccountId, setFilterAccountId] = useState('');
 
-  const active = useMemo(() => transactions.filter(t => !t.isDeleted), [transactions]);
+  const active = useMemo(() => {
+    let txns = transactions.filter(t => !t.isDeleted);
+    if (filterAccountId) txns = txns.filter(t => t.accountId === filterAccountId);
+    return txns;
+  }, [transactions, filterAccountId]);
   const openingBalance = settings?.openingBalancePaisa ?? 0;
 
   const { dateFrom, dateTo } = useMemo(() => {
@@ -109,6 +116,27 @@ const Reports: React.FC = () => {
             {t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
+      </div>
+
+      {/* Account Filter */}
+      <div className="card mb-6" style={{ padding: '12px 16px' }}>
+        <div className="flex gap-4 items-center flex-wrap">
+          <label className="form-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>Filter by Account</label>
+          <select
+            className="form-select"
+            value={filterAccountId}
+            onChange={e => setFilterAccountId(e.target.value)}
+            style={{ maxWidth: 260 }}
+          >
+            <option value="">All Accounts</option>
+            {accounts.filter(a => a.isActive).map(a => (
+              <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
+            ))}
+          </select>
+          {filterAccountId && (
+            <button className="btn btn-ghost btn-sm" onClick={() => setFilterAccountId('')}>Clear</button>
+          )}
+        </div>
       </div>
 
       {/* Custom Date Picker */}

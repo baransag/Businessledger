@@ -3,12 +3,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
 import { useTransactionStore } from './stores/transactionStore';
+import { useAccountStore } from './stores/accountStore';
 import { syncTransactions } from './sync/syncEngine';
 import { isSupabaseConfigured } from './sync/supabaseClient';
 import DuroodBanner from './components/DuroodBanner/DuroodBanner';
 import Sidebar from './components/Sidebar/Sidebar';
 import BottomNav from './components/BottomNav/BottomNav';
 import TransactionForm from './components/TransactionForm/TransactionForm';
+import TransferForm from './components/TransferForm/TransferForm';
 import Login from './pages/Login';
 import './index.css';
 
@@ -17,6 +19,8 @@ const Dashboard   = lazy(() => import('./pages/Dashboard'));
 const Ledger      = lazy(() => import('./pages/Ledger'));
 const Parties     = lazy(() => import('./pages/Parties'));
 const PartyDetail = lazy(() => import('./pages/PartyDetail'));
+const Accounts    = lazy(() => import('./pages/Accounts'));
+const AccountDetail = lazy(() => import('./pages/AccountDetail'));
 const Reports     = lazy(() => import('./pages/Reports'));
 const Import      = lazy(() => import('./pages/Import'));
 const Export      = lazy(() => import('./pages/Export'));
@@ -41,14 +45,19 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 const AppShell: React.FC = () => {
   const { user } = useAuthStore();
   const { loadAll, loadSettings } = useTransactionStore();
+  const { loadAccounts } = useAccountStore();
   const [showTxnForm, setShowTxnForm] = useState(false);
+  const [showTransferForm, setShowTransferForm] = useState(false);
   const [txnType, setTxnType] = useState<'credit'|'debit'>('credit');
 
   // Use real user ID or local-mode fallback
   const userId = user?.id || 'local-user';
 
   useEffect(() => {
-    loadSettings(userId).then(() => loadAll(userId));
+    loadSettings(userId).then(() => {
+      loadAll(userId);
+      loadAccounts(userId);
+    });
   }, [userId]);
 
   // Auto-sync when online (only if authenticated)
@@ -75,6 +84,8 @@ const AppShell: React.FC = () => {
               <Route path="/ledger"    element={<Ledger />} />
               <Route path="/parties"  element={<Parties />} />
               <Route path="/parties/:partyName" element={<PartyDetail />} />
+              <Route path="/accounts" element={<Accounts onOpenTransfer={() => setShowTransferForm(true)} />} />
+              <Route path="/accounts/:accountId" element={<AccountDetail onAddTransaction={openAdd} />} />
               <Route path="/reports"  element={<Reports />} />
               <Route path="/import"   element={<Import />} />
               <Route path="/export"   element={<Export />} />
@@ -89,6 +100,11 @@ const AppShell: React.FC = () => {
         <TransactionForm
           onClose={() => setShowTxnForm(false)}
           defaultType={txnType}
+        />
+      )}
+      {showTransferForm && (
+        <TransferForm
+          onClose={() => setShowTransferForm(false)}
         />
       )}
     </div>

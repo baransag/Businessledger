@@ -1,0 +1,144 @@
+/* src/pages/AccountDetail.css */
+
+.account-detail {
+  padding: 0 0 100px;
+}
+
+/* ─── Account Hero Card ────────────────────────────────────────── */
+.account-hero {
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.account-hero::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.account-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.account-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.account-hero-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+}
+
+.account-hero-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.account-hero-balance-label {
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.account-hero-balance {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 4px 0 16px;
+}
+
+.account-hero-stats {
+  display: flex;
+  gap: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.account-hero-stat {
+  flex: 1;
+}
+
+.account-hero-stat .label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  opacity: 0.7;
+}
+
+.account-hero-stat .value {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* ─── Opening Balance Editor ───────────────────────────────────── */
+.opening-balance-card {
+  background: var(--clr-bg-card);
+  border: 1px solid var(--clr-border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.opening-balance-card .form-input {
+  max-width: 180px;
+}
+
+/* ─── Transaction List for Account ─────────────────────────────── */
+.account-txn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .account-hero-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .account-hero-balance {
+    font-size: 1.6rem;
+  }
+
+  .opening-balance-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

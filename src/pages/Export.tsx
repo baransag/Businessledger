@@ -1,6 +1,7 @@
 // src/pages/Export.tsx
 import React, { useMemo, useState } from 'react';
 import { useTransactionStore } from '../stores/transactionStore';
+import { useAccountStore } from '../stores/accountStore';
 import { calculateRunningBalances, calculateSummary } from '../utils/balance';
 import { exportStatementPDF } from '../utils/pdfExport';
 import { exportToExcel, exportToCSV } from '../utils/excelExport';
@@ -11,16 +12,22 @@ import toast from 'react-hot-toast';
 
 const Export: React.FC = () => {
   const { transactions, settings } = useTransactionStore();
+  const { accounts } = useAccountStore();
   const { user } = useAuthStore();
   const userId = user?.id || 'local-user';
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo]     = useState('');
+  const [filterAccountId, setFilterAccountId] = useState('');
   const [exporting, setExporting] = useState<string | null>(null);
   const [restoreConfirm, setRestoreConfirm] = useState(false);
   const [restoreFile, setRestoreFile]       = useState<File | null>(null);
   const [mergeMode, setMergeMode]           = useState<'replace' | 'merge'>('merge');
 
-  const active = useMemo(() => transactions.filter(t => !t.isDeleted), [transactions]);
+  const active = useMemo(() => {
+    let txns = transactions.filter(t => !t.isDeleted);
+    if (filterAccountId) txns = txns.filter(t => t.accountId === filterAccountId);
+    return txns;
+  }, [transactions, filterAccountId]);
   const openingBalance = settings?.openingBalancePaisa ?? 0;
   const allWithBalance = useMemo(() => calculateRunningBalances(active, openingBalance), [active, openingBalance]);
   const summary = useMemo(() => calculateSummary(active, openingBalance), [active, openingBalance]);
@@ -148,12 +155,25 @@ const Export: React.FC = () => {
             <label className="form-label">To</label>
             <input type="date" className="form-input" value={dateTo} onChange={e => setDateTo(e.target.value)} />
           </div>
+          <div className="form-group" style={{ flex: 1, minWidth: 160 }}>
+            <label className="form-label">Account</label>
+            <select
+              className="form-select"
+              value={filterAccountId}
+              onChange={e => setFilterAccountId(e.target.value)}
+            >
+              <option value="">All Accounts</option>
+              {accounts.filter(a => a.isActive).map(a => (
+                <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex items-end gap-2">
             <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(startOfMonth()); setDateTo(endOfMonth()); }}>This Month</button>
-            <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(''); setDateTo(''); }}>All Time</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => { setDateFrom(''); setDateTo(''); setFilterAccountId(''); }}>Clear All</button>
           </div>
         </div>
-        <p className="text-muted text-sm mt-2">{filtered.length} transactions selected</p>
+        <p className="text-muted text-sm mt-2">{filtered.length} transactions selected{filterAccountId ? ` (${accounts.find(a => a.id === filterAccountId)?.name})` : ''}</p>
       </div>
 
       {/* Export */}

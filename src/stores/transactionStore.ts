@@ -22,6 +22,7 @@ interface TransactionFilters {
   type: 'all' | 'credit' | 'debit';
   amountMin: string;
   amountMax: string;
+  accountId: string;
 }
 
 interface TransactionState {
@@ -58,6 +59,7 @@ const defaultFilters: TransactionFilters = {
   search: '', dateFrom: '', dateTo: '',
   party: '', category: '', paymentMethod: '',
   type: 'all', amountMin: '', amountMax: '',
+  accountId: '',
 };
 
 function applyFiltersToList(txns: Transaction[], filters: TransactionFilters): Transaction[] {
@@ -79,6 +81,7 @@ function applyFiltersToList(txns: Transaction[], filters: TransactionFilters): T
     if (filters.paymentMethod && t.paymentMethod !== filters.paymentMethod) return false;
     if (filters.type === 'credit' && t.creditPaisa === 0) return false;
     if (filters.type === 'debit' && t.debitPaisa === 0) return false;
+    if (filters.accountId && t.accountId !== filters.accountId) return false;
     if (filters.amountMin) {
       const min = rupeesToPaisa(parseFloat(filters.amountMin));
       const amt = Math.max(t.creditPaisa, t.debitPaisa);
@@ -142,6 +145,8 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       debitPaisa: data.debitPaisa || 0,
       creditPaisa: data.creditPaisa || 0,
       notes: data.notes || '',
+      accountId: data.accountId || '',
+      transferId: data.transferId || '',
       syncStatus: 'pending',
     };
     await db.transactions.add(txn);

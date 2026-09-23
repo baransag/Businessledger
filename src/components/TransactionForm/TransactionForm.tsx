@@ -1,6 +1,7 @@
 // src/components/TransactionForm/TransactionForm.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useTransactionStore } from '../../stores/transactionStore';
+import { useAccountStore } from '../../stores/accountStore';
 import { useAuthStore } from '../../stores/authStore';
 import { rupeesToPaisa, paisaToRupees } from '../../utils/money';
 import { todayISO } from '../../utils/dateUtils';
@@ -17,6 +18,8 @@ interface Props {
 const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultType = 'credit' }) => {
   const { user } = useAuthStore();
   const { addTransaction, updateTransaction, categories, paymentMethods, addCategory, addPaymentMethod } = useTransactionStore();
+  const { accounts } = useAccountStore();
+  const activeAccounts = accounts.filter(a => a.isActive);
   const userId = user?.id || 'local-user';
 
   const [type, setType] = useState<'credit' | 'debit'>(
@@ -34,6 +37,7 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
   const [paymentMethod, setPaymentMethod] = useState(editTransaction?.paymentMethod || '');
   const [referenceNumber, setReferenceNumber] = useState(editTransaction?.referenceNumber || '');
   const [notes, setNotes] = useState(editTransaction?.notes || '');
+  const [accountId, setAccountId] = useState(editTransaction?.accountId || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
@@ -71,6 +75,7 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
         notes: notes.trim(),
         debitPaisa:  type === 'debit'  ? paisaAmount : 0,
         creditPaisa: type === 'credit' ? paisaAmount : 0,
+        accountId,
       };
 
       if (editTransaction) {
@@ -234,6 +239,26 @@ const TransactionForm: React.FC<Props> = ({ onClose, editTransaction, defaultTyp
                   onChange={e => setDescription(e.target.value)}
                 />
                 {errors.description && <span className="form-error">{errors.description}</span>}
+              </div>
+            </div>
+
+            {/* Account Selector */}
+            <div className="form-row" style={{ marginTop: 16 }}>
+              <div className="form-group">
+                <label className="form-label" htmlFor="txn-account">
+                  Account
+                </label>
+                <select
+                  id="txn-account"
+                  className="form-select"
+                  value={accountId}
+                  onChange={e => setAccountId(e.target.value)}
+                >
+                  <option value="">No account (unassigned)</option>
+                  {activeAccounts.map(a => (
+                    <option key={a.id} value={a.id}>{a.icon} {a.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

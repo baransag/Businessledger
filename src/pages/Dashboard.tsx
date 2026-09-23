@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTransactionStore } from '../stores/transactionStore';
+import { useAccountStore } from '../stores/accountStore';
 import { useAuthStore } from '../stores/authStore';
 import { calculateSummary, calculateRunningBalances } from '../utils/balance';
 import { formatPKR } from '../utils/money';
@@ -18,6 +19,18 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
 
   const active = useMemo(() => transactions.filter(t => !t.isDeleted), [transactions]);
   const openingBalance = settings?.openingBalancePaisa ?? 0;
+
+  // Accounts overview
+  const { accounts } = useAccountStore();
+  const getAccountsWithBalance = useAccountStore(s => s.getAccountsWithBalance);
+  const accountsWithBalance = useMemo(
+    () => getAccountsWithBalance(transactions),
+    [accounts, transactions]
+  );
+  const topAccounts = useMemo(
+    () => accountsWithBalance.filter(a => a.isActive).slice(0, 4),
+    [accountsWithBalance]
+  );
 
   const summary = useMemo(() => calculateSummary(active, openingBalance), [active, openingBalance]);
 
@@ -171,6 +184,53 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
           </div>
         </div>
       </div>
+
+      {/* ─── Accounts Overview ──────────────────────────────────── */}
+      {topAccounts.length > 0 && (
+        <div className="card mt-6">
+          <div className="card-header flex justify-between items-center">
+            <div className="card-title">Accounts Overview</div>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('/accounts')}>
+              View All
+            </button>
+          </div>
+          <div className="accounts-grid" style={{ padding: '4px 0' }}>
+            {topAccounts.map(account => (
+              <div
+                key={account.id}
+                className="account-card"
+                onClick={() => navigate(`/accounts/${account.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: account.color, borderRadius: '16px 16px 0 0' }} />
+                <div className="account-card-top">
+                  <div
+                    className="account-icon-wrap"
+                    style={{ background: `${account.color}18` }}
+                  >
+                    {account.icon}
+                  </div>
+                  <span className={`account-type-badge ${account.type}`}>
+                    {account.type === 'wallet' ? '📱 Wallet' : '🏦 Bank'}
+                  </span>
+                </div>
+                <div className="account-card-name">{account.name}</div>
+                <div className={`account-card-balance ${account.balance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+                  {formatPKR(account.balance)}
+                </div>
+                <div className="account-card-row">
+                  <span className="label">In</span>
+                  <span className="value credit">{formatPKR(account.totalCredit)}</span>
+                </div>
+                <div className="account-card-row">
+                  <span className="label">Out</span>
+                  <span className="value debit">{formatPKR(account.totalDebit)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Nova Glass Cash Flow Meter Card */}
       <div className="card mt-6 nova-flow-card">
