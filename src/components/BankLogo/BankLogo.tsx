@@ -49,9 +49,10 @@ export const BankLogo: React.FC<BankLogoProps> = ({
     );
   }
 
-  // 1. Meezan Bank (Main & Muhammad Asif)
-  if (norm.includes('meezan')) {
+  // 1. Meezan Bank & Safe Solutions
+  if (norm.includes('meezan') || (norm.includes('safe solutions') && !norm.includes('alfalah'))) {
     const isAsif = norm.includes('asif');
+    const isSafeSol = norm.includes('safe solutions') || norm === 'safe solutions';
     const isMain = norm.includes('main');
 
     return (
@@ -67,11 +68,16 @@ export const BankLogo: React.FC<BankLogoProps> = ({
         <path d="M50 16 C38 16 30 24 30 36 C30 44 35 50 42 53 L42 63 L36 63 L36 67 L64 67 L64 63 L58 63 L58 53 C65 50 70 44 70 36 C70 24 62 16 50 16 Z" fill="#FFFFFF"/>
         <circle cx="50" cy="34" r="5.5" fill="#1B6B3A"/>
         <path d="M47 28 L53 28 L53 40 L47 40 Z" fill="#D4AF37"/>
-        {/* Distinguish Main vs Muhammad Asif */}
+        {/* Distinguish Safe Solutions, Main vs Muhammad Asif */}
         {isAsif ? (
           <>
             <rect x="14" y="73" width="72" height="18" rx="4" fill="#D4AF37"/>
             <text x="50" y="86" textAnchor="middle" fill="#1B6B3A" fontSize="9" fontWeight="900" letterSpacing="0.5">M. ASIF</text>
+          </>
+        ) : isSafeSol ? (
+          <>
+            <rect x="6" y="73" width="88" height="18" rx="4" fill="#FFFFFF"/>
+            <text x="50" y="86" textAnchor="middle" fill="#1B6B3A" fontSize="7.5" fontWeight="900" letterSpacing="0.3">SAFE SOLUTIONS</text>
           </>
         ) : isMain ? (
           <>
@@ -164,8 +170,11 @@ export const BankLogo: React.FC<BankLogoProps> = ({
     );
   }
 
-  // 6. Bank Alfalah
+  // 6. Bank Alfalah (Safe Solutions & Muhammad Asif)
   if (norm.includes('alfalah')) {
+    const isAsif = norm.includes('asif');
+    const isSafeSol = norm.includes('safe');
+
     return (
       <svg
         viewBox="0 0 100 100"
@@ -177,7 +186,19 @@ export const BankLogo: React.FC<BankLogoProps> = ({
         <rect width="100" height="100" rx="20" fill="#FFFFFF" stroke="#ED1C24" strokeWidth="1.5" />
         <path d="M50 16 C30 16 18 30 18 50 C18 68 32 82 50 82 C65 82 78 72 80 58 C82 45 74 34 62 34 C52 34 44 42 44 52 C44 60 50 66 58 66 C64 66 68 62 68 56" fill="none" stroke="#ED1C24" strokeWidth="7" strokeLinecap="round"/>
         <circle cx="58" cy="56" r="4.5" fill="#002D62"/>
-        <text x="50" y="93" textAnchor="middle" fill="#ED1C24" fontSize="8" fontWeight="800" letterSpacing="0.5">ALFALAH</text>
+        {isAsif ? (
+          <>
+            <rect x="12" y="76" width="76" height="18" rx="4" fill="#ED1C24"/>
+            <text x="50" y="89" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="900" letterSpacing="0.5">M. ASIF</text>
+          </>
+        ) : isSafeSol ? (
+          <>
+            <rect x="8" y="76" width="84" height="18" rx="4" fill="#ED1C24"/>
+            <text x="50" y="89" textAnchor="middle" fill="#FFFFFF" fontSize="7.5" fontWeight="900" letterSpacing="0.3">SAFE SOL</text>
+          </>
+        ) : (
+          <text x="50" y="93" textAnchor="middle" fill="#ED1C24" fontSize="8" fontWeight="800" letterSpacing="0.5">ALFALAH</text>
+        )}
       </svg>
     );
   }

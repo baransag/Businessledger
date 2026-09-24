@@ -65,41 +65,40 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       let changed = false;
       const now = Date.now();
 
-      // 1. Rename 'Meezan Bank' to 'Meezan Bank — Main' if present
-      const meezanOld = accounts.find(a => a.name === 'Meezan Bank');
+      // 1. Rename 'Meezan Bank — Main' or 'Meezan Bank' to 'Safe Solutions' (preserves ID and txns)
+      const meezanOld = accounts.find(a => a.name === 'Meezan Bank — Main' || a.name === 'Meezan Bank');
       if (meezanOld) {
         await db.accounts.update(meezanOld.id, {
-          name: 'Meezan Bank — Main',
+          name: 'Safe Solutions',
           updatedAt: now,
           syncStatus: 'pending',
         });
-        meezanOld.name = 'Meezan Bank — Main';
+        meezanOld.name = 'Safe Solutions';
         changed = true;
+      } else {
+        const hasSafeSolutions = accounts.some(a => a.name === 'Safe Solutions');
+        if (!hasSafeSolutions) {
+          const safePreset = PRESET_ACCOUNTS.find(p => p.name === 'Safe Solutions')!;
+          const newSafe: Account = {
+            id: genId(),
+            userId,
+            name: safePreset.name,
+            type: safePreset.type,
+            icon: safePreset.icon,
+            color: safePreset.color,
+            openingBalancePaisa: 0,
+            isActive: true,
+            createdAt: now,
+            updatedAt: now,
+            syncStatus: 'pending',
+          };
+          await db.accounts.add(newSafe);
+          accounts.push(newSafe);
+          changed = true;
+        }
       }
 
-      // 2. Ensure 'Meezan Bank — Main' exists if neither old nor new was found
-      const hasMeezanMain = accounts.some(a => a.name === 'Meezan Bank — Main' || a.name === 'Meezan Bank');
-      if (!hasMeezanMain) {
-        const meezanMainPreset = PRESET_ACCOUNTS.find(p => p.name === 'Meezan Bank — Main')!;
-        const newMain: Account = {
-          id: genId(),
-          userId,
-          name: meezanMainPreset.name,
-          type: meezanMainPreset.type,
-          icon: meezanMainPreset.icon,
-          color: meezanMainPreset.color,
-          openingBalancePaisa: 0,
-          isActive: true,
-          createdAt: now,
-          updatedAt: now,
-          syncStatus: 'pending',
-        };
-        await db.accounts.add(newMain);
-        accounts.push(newMain);
-        changed = true;
-      }
-
-      // 3. Ensure 'Meezan Bank — Muhammad Asif' exists
+      // 2. Ensure 'Meezan Bank — Muhammad Asif' exists
       const hasMeezanAsif = accounts.some(a => a.name === 'Meezan Bank — Muhammad Asif');
       if (!hasMeezanAsif) {
         const asifPreset = PRESET_ACCOUNTS.find(p => p.name === 'Meezan Bank — Muhammad Asif')!;
@@ -121,7 +120,62 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         changed = true;
       }
 
-      // 4. Ensure 'Office Cash' exists
+      // 3. Rename 'Bank Alfalah' to 'Alfalah — Safe Solutions' (preserves ID and txns)
+      const alfalahOld = accounts.find(a => a.name === 'Bank Alfalah');
+      if (alfalahOld) {
+        await db.accounts.update(alfalahOld.id, {
+          name: 'Alfalah — Safe Solutions',
+          updatedAt: now,
+          syncStatus: 'pending',
+        });
+        alfalahOld.name = 'Alfalah — Safe Solutions';
+        changed = true;
+      } else {
+        const hasAlfalahSafe = accounts.some(a => a.name === 'Alfalah — Safe Solutions');
+        if (!hasAlfalahSafe) {
+          const alfalahSafePreset = PRESET_ACCOUNTS.find(p => p.name === 'Alfalah — Safe Solutions')!;
+          const newAlfalahSafe: Account = {
+            id: genId(),
+            userId,
+            name: alfalahSafePreset.name,
+            type: alfalahSafePreset.type,
+            icon: alfalahSafePreset.icon,
+            color: alfalahSafePreset.color,
+            openingBalancePaisa: 0,
+            isActive: true,
+            createdAt: now,
+            updatedAt: now,
+            syncStatus: 'pending',
+          };
+          await db.accounts.add(newAlfalahSafe);
+          accounts.push(newAlfalahSafe);
+          changed = true;
+        }
+      }
+
+      // 4. Ensure 'Alfalah — Muhammad Asif' exists
+      const hasAlfalahAsif = accounts.some(a => a.name === 'Alfalah — Muhammad Asif');
+      if (!hasAlfalahAsif) {
+        const alfalahAsifPreset = PRESET_ACCOUNTS.find(p => p.name === 'Alfalah — Muhammad Asif')!;
+        const newAlfalahAsif: Account = {
+          id: genId(),
+          userId,
+          name: alfalahAsifPreset.name,
+          type: alfalahAsifPreset.type,
+          icon: alfalahAsifPreset.icon,
+          color: alfalahAsifPreset.color,
+          openingBalancePaisa: 0,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: 'pending',
+        };
+        await db.accounts.add(newAlfalahAsif);
+        accounts.push(newAlfalahAsif);
+        changed = true;
+      }
+
+      // 5. Ensure 'Office Cash' exists
       const hasOfficeCash = accounts.some(a => a.name === 'Office Cash');
       if (!hasOfficeCash) {
         const cashPreset = PRESET_ACCOUNTS.find(p => p.name === 'Office Cash')!;

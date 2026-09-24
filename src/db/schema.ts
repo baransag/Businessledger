@@ -77,7 +77,7 @@ export const DEFAULT_PAYMENT_METHODS = [
   'Cash', 'Bank Transfer', 'JazzCash', 'EasyPaisa', 'Online', 'Cheque', 'Other',
 ];
 
-// ─── Preset Accounts (14 Accounts: 11 Banks + 2 Wallets + 1 Cash) ───
+// ─── Preset Accounts (15 Accounts: 12 Banks + 2 Wallets + 1 Cash) ───
 
 export interface PresetAccount {
   name: string;
@@ -87,14 +87,15 @@ export interface PresetAccount {
 }
 
 export const PRESET_ACCOUNTS: PresetAccount[] = [
-  // Banks (11)
-  { name: 'Meezan Bank — Main',           type: 'bank',   icon: '🏦', color: '#1B6B3A' },
+  // Banks (12)
+  { name: 'Safe Solutions',               type: 'bank',   icon: '🏦', color: '#1B6B3A' },
   { name: 'Meezan Bank — Muhammad Asif',  type: 'bank',   icon: '🏦', color: '#13582E' },
   { name: 'HBL',                          type: 'bank',   icon: '🏛️', color: '#006B3F' },
   { name: 'MCB',                          type: 'bank',   icon: '🏦', color: '#D4A843' },
   { name: 'MCIB',                         type: 'bank',   icon: '🏦', color: '#2E5090' },
   { name: 'NBP',                          type: 'bank',   icon: '🏛️', color: '#0A4D8C' },
-  { name: 'Bank Alfalah',                 type: 'bank',   icon: '🏦', color: '#C8102E' },
+  { name: 'Alfalah — Safe Solutions',     type: 'bank',   icon: '🏦', color: '#C8102E' },
+  { name: 'Alfalah — Muhammad Asif',      type: 'bank',   icon: '🏦', color: '#A30D25' },
   { name: 'Faisal Bank',                  type: 'bank',   icon: '🏦', color: '#006747' },
   { name: 'UBL',                          type: 'bank',   icon: '🏛️', color: '#004B87' },
   { name: 'Bank of Punjab (BOP)',         type: 'bank',   icon: '🏦', color: '#8B1A1A' },
