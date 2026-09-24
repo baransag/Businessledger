@@ -3,7 +3,7 @@ import React from 'react';
 
 interface BankLogoProps {
   accountName: string;
-  type?: 'bank' | 'wallet';
+  type?: 'bank' | 'wallet' | 'cash';
   size?: number;
   className?: string;
 }
@@ -16,8 +16,44 @@ export const BankLogo: React.FC<BankLogoProps> = ({
 }) => {
   const norm = accountName.trim().toLowerCase();
 
-  // 1. Meezan Bank
+  // 0. Office Cash / Cash Accounts
+  if (norm.includes('office cash') || norm === 'cash' || type === 'cash') {
+    return (
+      <svg
+        viewBox="0 0 100 100"
+        width={size}
+        height={size}
+        className={className}
+        style={{ borderRadius: size * 0.22, flexShrink: 0, boxShadow: '0 2px 10px rgba(15,118,110,0.35)' }}
+      >
+        <defs>
+          <linearGradient id="cashGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#0F766E"/>
+            <stop offset="100%" stopColor="#042F2E"/>
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="20" fill="url(#cashGrad)" />
+        {/* Subtle decorative security pattern border */}
+        <rect x="7" y="7" width="86" height="86" rx="14" fill="none" stroke="#34D399" strokeWidth="1.5" strokeDasharray="4 2" opacity="0.6"/>
+        {/* Currency Note symbol */}
+        <rect x="18" y="24" width="64" height="42" rx="6" fill="#134E4A" stroke="#2DD4BF" strokeWidth="2"/>
+        <circle cx="50" cy="45" r="14" fill="#0F766E" stroke="#FDE047" strokeWidth="1.8"/>
+        {/* Pakistani Rupee Symbol / Rs */}
+        <text x="50" y="51" textAnchor="middle" fill="#FEF08A" fontSize="16" fontWeight="900" fontFamily="sans-serif">Rs</text>
+        <circle cx="28" cy="45" r="3" fill="#2DD4BF" opacity="0.8"/>
+        <circle cx="72" cy="45" r="3" fill="#2DD4BF" opacity="0.8"/>
+        {/* Bottom Cash Label */}
+        <rect x="24" y="72" width="52" height="18" rx="4" fill="#FDE047"/>
+        <text x="50" y="85" textAnchor="middle" fill="#042F2E" fontSize="10" fontWeight="900" letterSpacing="1">CASH</text>
+      </svg>
+    );
+  }
+
+  // 1. Meezan Bank (Main & Muhammad Asif)
   if (norm.includes('meezan')) {
+    const isAsif = norm.includes('asif');
+    const isMain = norm.includes('main');
+
     return (
       <svg
         viewBox="0 0 100 100"
@@ -28,10 +64,23 @@ export const BankLogo: React.FC<BankLogoProps> = ({
       >
         <circle cx="50" cy="50" r="48" fill="#1B6B3A" />
         <circle cx="50" cy="50" r="44" fill="none" stroke="#D4AF37" strokeWidth="1.5" opacity="0.7"/>
-        <path d="M50 18 C38 18 30 26 30 38 C30 46 35 52 42 55 L42 66 L36 66 L36 70 L64 70 L64 66 L58 66 L58 55 C65 52 70 46 70 38 C70 26 62 18 50 18 Z" fill="#FFFFFF"/>
-        <circle cx="50" cy="36" r="6" fill="#1B6B3A"/>
-        <path d="M47 30 L53 30 L53 42 L47 42 Z" fill="#D4AF37"/>
-        <text x="50" y="84" textAnchor="middle" fill="#FFFFFF" fontSize="9" fontWeight="900" letterSpacing="1">MEEZAN</text>
+        <path d="M50 16 C38 16 30 24 30 36 C30 44 35 50 42 53 L42 63 L36 63 L36 67 L64 67 L64 63 L58 63 L58 53 C65 50 70 44 70 36 C70 24 62 16 50 16 Z" fill="#FFFFFF"/>
+        <circle cx="50" cy="34" r="5.5" fill="#1B6B3A"/>
+        <path d="M47 28 L53 28 L53 40 L47 40 Z" fill="#D4AF37"/>
+        {/* Distinguish Main vs Muhammad Asif */}
+        {isAsif ? (
+          <>
+            <rect x="14" y="73" width="72" height="18" rx="4" fill="#D4AF37"/>
+            <text x="50" y="86" textAnchor="middle" fill="#1B6B3A" fontSize="9" fontWeight="900" letterSpacing="0.5">M. ASIF</text>
+          </>
+        ) : isMain ? (
+          <>
+            <rect x="18" y="73" width="64" height="18" rx="4" fill="#FFFFFF"/>
+            <text x="50" y="86" textAnchor="middle" fill="#1B6B3A" fontSize="9" fontWeight="900" letterSpacing="0.8">MAIN</text>
+          </>
+        ) : (
+          <text x="50" y="84" textAnchor="middle" fill="#FFFFFF" fontSize="9" fontWeight="900" letterSpacing="1">MEEZAN</text>
+        )}
       </svg>
     );
   }

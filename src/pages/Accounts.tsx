@@ -20,7 +20,7 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
   const navigate = useNavigate();
   const userId = user?.id || 'local-user';
 
-  const [filter, setFilter] = useState<'all' | 'bank' | 'wallet'>('all');
+  const [filter, setFilter] = useState<'all' | 'bank' | 'wallet' | 'cash'>('all');
 
   useEffect(() => {
     loadAccounts(userId);
@@ -31,6 +31,11 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
     [accounts, transactions]
   );
 
+  const activeAccounts = useMemo(() => accountsWithBalance.filter(a => a.isActive), [accountsWithBalance]);
+  const bankAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'bank'), [activeAccounts]);
+  const walletAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'wallet'), [activeAccounts]);
+  const cashAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'cash'), [activeAccounts]);
+
   const filteredAccounts = useMemo(() => {
     if (filter === 'all') return accountsWithBalance;
     return accountsWithBalance.filter(a => a.type === filter);
@@ -39,7 +44,7 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
   const totalBalance = accountsWithBalance.reduce((s, a) => s + a.balance, 0);
   const totalIn = accountsWithBalance.reduce((s, a) => s + a.totalCredit, 0);
   const totalOut = accountsWithBalance.reduce((s, a) => s + a.totalDebit, 0);
-  const activeCount = accountsWithBalance.filter(a => a.isActive).length;
+  const activeCount = activeAccounts.length;
 
   return (
     <div className="accounts-page">
@@ -47,7 +52,7 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
       <div className="accounts-header">
         <div>
           <h1>Accounts</h1>
-          <p className="text-muted text-sm">Manage your bank accounts & digital wallets</p>
+          <p className="text-muted text-sm">Manage your bank accounts, digital wallets & physical cash</p>
         </div>
         <div className="accounts-actions">
           {onOpenTransfer && (
@@ -62,10 +67,11 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
       {/* Total Balance Banner */}
       <div className="accounts-total-banner">
         <div>
-          <div className="accounts-total-label">Combined Balance</div>
+          <div className="accounts-total-label">Combined Liquid Balance</div>
           <div className={`accounts-total-amount ${totalBalance >= 0 ? 'positive' : 'negative'}`}>
             {formatPKR(totalBalance)}
           </div>
+          <div className="text-xs text-muted mt-1">Cash + Bank Accounts + Digital Wallets</div>
         </div>
         <div className="accounts-total-stats">
           <div className="accounts-total-stat">
@@ -77,23 +83,38 @@ const Accounts: React.FC<AccountsProps> = ({ onOpenTransfer }) => {
             <div className="stat-lbl">Total Out</div>
           </div>
           <div className="accounts-total-stat">
-            <div className="stat-val">{activeCount}</div>
-            <div className="stat-lbl">Active Accounts</div>
+            <div className="stat-val">{activeCount} Accounts</div>
+            <div className="stat-lbl">Active Total</div>
           </div>
         </div>
       </div>
 
       {/* Type Filter */}
       <div className="accounts-type-toggle" style={{ marginBottom: 20 }}>
-        {(['all', 'bank', 'wallet'] as const).map(t => (
-          <button
-            key={t}
-            className={filter === t ? 'active' : ''}
-            onClick={() => setFilter(t)}
-          >
-            {t === 'all' ? '🔍 All' : t === 'bank' ? '🏦 Banks' : '📱 Wallets'}
-          </button>
-        ))}
+        <button
+          className={filter === 'all' ? 'active' : ''}
+          onClick={() => setFilter('all')}
+        >
+          🔍 All ({activeAccounts.length})
+        </button>
+        <button
+          className={filter === 'bank' ? 'active' : ''}
+          onClick={() => setFilter('bank')}
+        >
+          🏦 Banks ({bankAccounts.length})
+        </button>
+        <button
+          className={filter === 'wallet' ? 'active' : ''}
+          onClick={() => setFilter('wallet')}
+        >
+          📱 Wallets ({walletAccounts.length})
+        </button>
+        <button
+          className={filter === 'cash' ? 'active' : ''}
+          onClick={() => setFilter('cash')}
+        >
+          💵 Cash ({cashAccounts.length})
+        </button>
       </div>
 
       {/* Account Cards Grid */}
@@ -153,8 +174,8 @@ const AccountCard: React.FC<AccountCardProps> = ({ account, index, onClick }) =>
             {String(index + 1).padStart(2, '0')}
           </span>
         </div>
-        <span className={`stat-pill-tag ${account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
-          ● {account.type === 'wallet' ? 'WALLET' : 'BANK'}
+        <span className={`stat-pill-tag ${account.type === 'cash' ? 'tag-cash' : account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
+          ● {account.type === 'cash' ? 'CASH' : account.type === 'wallet' ? 'WALLET' : 'BANK'}
         </span>
       </div>
 
@@ -165,11 +186,22 @@ const AccountCard: React.FC<AccountCardProps> = ({ account, index, onClick }) =>
       </div>
 
       <div className="stat-sub account-stat-sub">
-        <span style={{ color: 'var(--clr-green)' }}>↓ In: {formatPKR(account.totalCredit)}</span>
-        <span style={{ color: 'var(--clr-red)' }}>↑ Out: {formatPKR(account.totalDebit)}</span>
+        <span style={{ color: 'var(--clr-green)' }}>
+          ↓ {account.type === 'cash' ? 'Cash In' : 'In'}: {formatPKR(account.totalCredit)}
+        </span>
+        <span style={{ color: 'var(--clr-red)' }}>
+          ↑ {account.type === 'cash' ? 'Cash Out' : 'Out'}: {formatPKR(account.totalDebit)}
+        </span>
       </div>
 
-      <div className="stat-glass-bar" style={{ marginTop: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, fontSize: '0.785rem', color: 'var(--clr-text-muted)' }}>
+        <span>Transactions: <strong style={{ color: 'var(--clr-text-primary)' }}>{account.txnCount}</strong></span>
+        <span style={{ fontWeight: 600, color: 'var(--clr-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          Open Account →
+        </span>
+      </div>
+
+      <div className="stat-glass-bar" style={{ marginTop: 8 }}>
         <div
           className="stat-glass-fill"
           style={{ width: `${inPercent}%`, background: account.color || 'var(--pal-teal)' }}

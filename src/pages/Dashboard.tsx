@@ -21,18 +21,52 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
   const openingBalance = settings?.openingBalancePaisa ?? 0;
 
   // Accounts overview
-  const [accountFilter, setAccountFilter] = useState<'all' | 'bank' | 'wallet'>('all');
+  const [accountFilter, setAccountFilter] = useState<'all' | 'bank' | 'wallet' | 'cash'>('all');
   const { accounts } = useAccountStore();
   const getAccountsWithBalance = useAccountStore(s => s.getAccountsWithBalance);
   const accountsWithBalance = useMemo(
     () => getAccountsWithBalance(transactions),
     [accounts, transactions]
   );
+  
+  const activeAccounts = useMemo(() => accountsWithBalance.filter(a => a.isActive), [accountsWithBalance]);
+  const bankAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'bank'), [activeAccounts]);
+  const walletAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'wallet'), [activeAccounts]);
+  const cashAccounts = useMemo(() => activeAccounts.filter(a => a.type === 'cash'), [activeAccounts]);
+
   const displayedAccounts = useMemo(() => {
-    const activeAccounts = accountsWithBalance.filter(a => a.isActive);
     if (accountFilter === 'all') return activeAccounts;
     return activeAccounts.filter(a => a.type === accountFilter);
-  }, [accountsWithBalance, accountFilter]);
+  }, [activeAccounts, accountFilter]);
+
+  // Office Cash account & balance
+  const officeCashAccount = useMemo(
+    () => activeAccounts.find(a => a.type === 'cash' || a.name.toLowerCase().includes('office cash')),
+    [activeAccounts]
+  );
+  const officeCashBalance = officeCashAccount?.balance ?? 0;
+
+  // Banks combined balance
+  const totalBankBalance = useMemo(
+    () => bankAccounts.reduce((s, a) => s + a.balance, 0),
+    [bankAccounts]
+  );
+
+  // Wallets combined balance
+  const totalWalletBalance = useMemo(
+    () => walletAccounts.reduce((s, a) => s + a.balance, 0),
+    [walletAccounts]
+  );
+
+  // Total Available = Cash + Banks + Wallets
+  const totalAvailableBalance = officeCashBalance + totalBankBalance + totalWalletBalance;
+
+  // Normal business movement (EXCLUDING internal transfers)
+  const isTransfer = (t: typeof transactions[0]) => Boolean(t.transferId || t.category === 'Transfer');
+  const businessTxns = useMemo(() => active.filter(t => !isTransfer(t)), [active]);
+  const totalMoneyIn = useMemo(() => businessTxns.reduce((s, t) => s + t.creditPaisa, 0), [businessTxns]);
+  const totalMoneyOut = useMemo(() => businessTxns.reduce((s, t) => s + t.debitPaisa, 0), [businessTxns]);
+  const netBusinessMovement = totalMoneyIn - totalMoneyOut;
 
   const summary = useMemo(() => calculateSummary(active, openingBalance), [active, openingBalance]);
 
@@ -187,6 +221,158 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
         </div>
       </div>
 
+      {/* ─── MONEY POSITION (Physical Cash, Banks, Wallets, Available) ─ */}
+      <div className="section-header-wrap">
+        <div className="section-headline">
+          <span>MONEY POSITION</span>
+        </div>
+        <p className="section-subheadline">
+          Real-time physical cash, bank deposits & digital wallet reserves
+        </p>
+      </div>
+
+      <div className="money-position-grid">
+        {/* Card 1: Office Cash */}
+        <div
+          className="money-position-card pos-cash"
+          onClick={() => officeCashAccount && navigate(`/accounts/${officeCashAccount.id}`)}
+          style={{ cursor: officeCashAccount ? 'pointer' : 'default' }}
+          title={officeCashAccount ? 'View Office Cash Ledger' : undefined}
+        >
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-cash">● PHYSICAL CASH</span>
+            <span className="stat-num-badge">01</span>
+          </div>
+          <div className="stat-label">OFFICE CASH</div>
+          <div className="text-muted text-xs mb-1">Current physical cash in office</div>
+          <div className={`stat-value ${officeCashBalance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+            {formatPKR(officeCashBalance)}
+          </div>
+          <div className="stat-sub mt-2">
+            <span>{officeCashAccount ? `${officeCashAccount.txnCount} transactions` : 'Cash drawer'}</span>
+          </div>
+        </div>
+
+        {/* Card 2: Total Bank Balance */}
+        <div
+          className="money-position-card pos-bank"
+          onClick={() => { setAccountFilter('bank'); }}
+          style={{ cursor: 'pointer' }}
+          title="Filter to Bank Accounts"
+        >
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-credit">● {bankAccounts.length} BANKS</span>
+            <span className="stat-num-badge">02</span>
+          </div>
+          <div className="stat-label">TOTAL BANK BALANCE</div>
+          <div className="text-muted text-xs mb-1">All bank accounts combined</div>
+          <div className={`stat-value ${totalBankBalance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+            {formatPKR(totalBankBalance)}
+          </div>
+          <div className="stat-sub mt-2">
+            <span>Across Meezan, HBL, MCB & more</span>
+          </div>
+        </div>
+
+        {/* Card 3: Total Wallet Balance */}
+        <div
+          className="money-position-card pos-wallet"
+          onClick={() => { setAccountFilter('wallet'); }}
+          style={{ cursor: 'pointer' }}
+          title="Filter to Digital Wallets"
+        >
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-records">● {walletAccounts.length} WALLETS</span>
+            <span className="stat-num-badge">03</span>
+          </div>
+          <div className="stat-label">TOTAL WALLET BALANCE</div>
+          <div className="text-muted text-xs mb-1">EasyPaisa + JazzCash</div>
+          <div className={`stat-value ${totalWalletBalance >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+            {formatPKR(totalWalletBalance)}
+          </div>
+          <div className="stat-sub mt-2">
+            <span>Instant mobile money float</span>
+          </div>
+        </div>
+
+        {/* Card 4: Total Available */}
+        <div className="money-position-card pos-total">
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-net">● LIQUID POSITION</span>
+            <span className="stat-num-badge">04</span>
+          </div>
+          <div className="stat-label">TOTAL AVAILABLE</div>
+          <div className="text-muted text-xs mb-1">Cash + Banks + Wallets</div>
+          <div className={`stat-value ${totalAvailableBalance >= 0 ? 'amount-credit' : 'amount-debit'}`} style={{ color: '#1d4ed8' }}>
+            {formatPKR(totalAvailableBalance)}
+          </div>
+          <div className="stat-sub mt-2">
+            <span>Total liquid business capital</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MONEY MOVEMENT (Excluding Internal Transfers) ──────────── */}
+      <div className="section-header-wrap">
+        <div className="section-headline">
+          <span>MONEY MOVEMENT</span>
+        </div>
+        <p className="section-subheadline">
+          Operational business cash flow (internal transfers excluded)
+        </p>
+      </div>
+
+      <div className="money-movement-grid">
+        {/* Card 1: Total Money In */}
+        <div className="money-movement-card mov-in">
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-credit">● NORMAL CREDITS</span>
+            <span className="stat-num-badge">IN</span>
+          </div>
+          <div className="stat-label">TOTAL MONEY IN</div>
+          <div className="text-muted text-xs mb-1">All normal business credits received</div>
+          <div className="stat-value amount-credit">{formatPKR(totalMoneyIn)}</div>
+          <div className="stat-sub mt-2">
+            <span>{businessTxns.filter(t => t.creditPaisa > 0).length} revenue entries</span>
+          </div>
+        </div>
+
+        {/* Card 2: Total Money Out */}
+        <div className="money-movement-card mov-out">
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-debit">● NORMAL DEBITS</span>
+            <span className="stat-num-badge">OUT</span>
+          </div>
+          <div className="stat-label">TOTAL MONEY OUT</div>
+          <div className="text-muted text-xs mb-1">All normal business debits & payments</div>
+          <div className="stat-value amount-debit">{formatPKR(totalMoneyOut)}</div>
+          <div className="stat-sub mt-2">
+            <span>{businessTxns.filter(t => t.debitPaisa > 0).length} payment entries</span>
+          </div>
+        </div>
+
+        {/* Card 3: Net Movement */}
+        <div className="money-movement-card mov-net">
+          <div className="stat-card-header">
+            <span className="stat-pill-tag tag-net">● OPERATING NET</span>
+            <span className="stat-num-badge">NET</span>
+          </div>
+          <div className="stat-label">NET MOVEMENT</div>
+          <div className="text-muted text-xs mb-1">Money In − Money Out</div>
+          <div className={`stat-value ${netBusinessMovement >= 0 ? 'amount-credit' : 'amount-debit'}`}>
+            {netBusinessMovement >= 0 ? '+' : ''}{formatPKR(netBusinessMovement)}
+          </div>
+          <div className="stat-sub mt-2">
+            <span>Net business cash generation</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="internal-transfer-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Internal transfers between accounts (e.g. Office Cash ↔ Meezan Bank) never inflate Money In or Money Out.</span>
+      </div>
+
       {/* ─── Accounts Overview (Nova Glass Cards) ──────────────────── */}
       {accountsWithBalance.length > 0 && (
         <div className="mt-8">
@@ -195,7 +381,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
               <div className="card-title" style={{ fontSize: '1.05rem', letterSpacing: '0.04em' }}>
                 ACCOUNTS OVERVIEW
               </div>
-              <p className="text-muted text-xs">Live balances & real-time activity across banks & digital wallets</p>
+              <p className="text-muted text-xs">Live balances & real-time activity across cash, banks & digital wallets</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <button
@@ -203,21 +389,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
                 onClick={() => setAccountFilter('all')}
                 style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
               >
-                All ({accountsWithBalance.filter(a => a.isActive).length})
+                All ({activeAccounts.length})
               </button>
               <button
                 className={`btn btn-sm ${accountFilter === 'bank' ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setAccountFilter('bank')}
                 style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
               >
-                Banks ({accountsWithBalance.filter(a => a.isActive && a.type === 'bank').length})
+                Banks ({bankAccounts.length})
               </button>
               <button
                 className={`btn btn-sm ${accountFilter === 'wallet' ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setAccountFilter('wallet')}
                 style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
               >
-                Wallets ({accountsWithBalance.filter(a => a.isActive && a.type === 'wallet').length})
+                Wallets ({walletAccounts.length})
+              </button>
+              <button
+                className={`btn btn-sm ${accountFilter === 'cash' ? 'btn-primary' : 'btn-ghost'}`}
+                onClick={() => setAccountFilter('cash')}
+                style={{ padding: '5px 14px', fontSize: '0.8rem', borderRadius: 'var(--radius-pill)' }}
+              >
+                Cash ({cashAccounts.length})
               </button>
               <button
                 className="btn btn-ghost btn-sm"
@@ -252,8 +445,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
                         {String(index + 1).padStart(2, '0')}
                       </span>
                     </div>
-                    <span className={`stat-pill-tag ${account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
-                      ● {account.type === 'wallet' ? 'WALLET' : 'BANK'}
+                    <span className={`stat-pill-tag ${account.type === 'cash' ? 'tag-cash' : account.type === 'wallet' ? 'tag-records' : 'tag-credit'}`}>
+                      ● {account.type === 'cash' ? 'CASH' : account.type === 'wallet' ? 'WALLET' : 'BANK'}
                     </span>
                   </div>
 
@@ -263,10 +456,20 @@ const Dashboard: React.FC<DashboardProps> = ({ onAddTransaction }) => {
                     {formatPKR(account.balance)}
                   </div>
                   <div className="stat-sub account-stat-sub">
-                    <span style={{ color: 'var(--clr-green)' }}>↓ In: {formatPKR(account.totalCredit)}</span>
-                    <span style={{ color: 'var(--clr-red)' }}>↑ Out: {formatPKR(account.totalDebit)}</span>
+                    <span style={{ color: 'var(--clr-green)' }}>
+                      ↓ {account.type === 'cash' ? 'Cash In' : 'In'}: {formatPKR(account.totalCredit)}
+                    </span>
+                    <span style={{ color: 'var(--clr-red)' }}>
+                      ↑ {account.type === 'cash' ? 'Cash Out' : 'Out'}: {formatPKR(account.totalDebit)}
+                    </span>
                   </div>
-                  <div className="stat-glass-bar">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, fontSize: '0.785rem', color: 'var(--clr-text-muted)' }}>
+                    <span>Transactions: <strong style={{ color: 'var(--clr-text-primary)' }}>{account.txnCount}</strong></span>
+                    <span style={{ fontWeight: 600, color: 'var(--clr-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      Open Account →
+                    </span>
+                  </div>
+                  <div className="stat-glass-bar" style={{ marginTop: 8 }}>
                     <div
                       className="stat-glass-fill"
                       style={{

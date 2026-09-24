@@ -3,16 +3,55 @@
 .durood-announcement-banner {
   position: relative;
   width: 100%;
-  height: 48px;
-  background: linear-gradient(90deg, #18241e 0%, #1a2c26 25%, #252321 50%, #1a2c26 75%, #18241e 100%);
-  border-bottom: 1px solid rgba(212, 168, 67, 0.35);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  min-height: 52px;
+  background: linear-gradient(135deg, #07130e 0%, #0d2017 35%, #13241b 70%, #08140f 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.38);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   overflow: hidden;
   z-index: 40;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  transition: all 300ms ease;
+}
+
+/* Subtle Islamic geometric pattern overlay */
+.durood-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: radial-gradient(circle at 50% 50%, #d4af37 1px, transparent 1px),
+                    radial-gradient(circle at 0 0, #d4af37 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Very subtle, slow champagne shimmer sweep */
+.durood-shimmer-sweep {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(245, 230, 179, 0.05) 50%, transparent 100%);
+  pointer-events: none;
+  animation: gentleShimmer 16s ease-in-out infinite;
+}
+
+@keyframes gentleShimmer {
+  0% { left: -60%; }
+  35%, 100% { left: 140%; }
+}
+
+.durood-banner-inner {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  gap: 16px;
 }
 
 /* Left Announcement Pill Badge */
@@ -21,8 +60,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 14px 6px 12px;
-  margin-left: 12px;
-  background: linear-gradient(135deg, rgba(212, 168, 67, 0.25) 0%, rgba(243, 195, 178, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.22) 0%, rgba(18, 48, 35, 0.75) 100%);
   border: 1px solid rgba(240, 192, 96, 0.45);
   border-radius: 9999px;
   color: #f7e2a9;
@@ -31,123 +69,81 @@
   letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
-  box-shadow: 0 2px 10px rgba(212, 168, 67, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   z-index: 2;
 }
 
 .durood-pulse-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
-  animation: pulseBeacon 2s ease-in-out infinite;
-}
-
-@keyframes pulseBeacon {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.35);
-    opacity: 0.6;
-  }
+  box-shadow: 0 0 8px #f59e0b;
 }
 
 .durood-badge-icon {
-  font-family: 'Noto Nastaliq Urdu', serif;
   font-size: 0.95rem;
   color: #ffd880;
+  line-height: 1;
 }
 
 .durood-badge-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* Ticker container with gradient fade masks */
-.durood-marquee-container {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent);
-}
-
-/* Marquee infinite running track */
-.durood-marquee-track {
-  display: flex;
-  align-items: center;
-  width: max-content;
-  will-change: transform;
-  animation: announcementScroll 38s linear infinite;
-}
-
-/* Pause running banner on mouse hover */
-.durood-announcement-banner:hover .durood-marquee-track {
-  animation-play-state: paused;
-}
-
-@keyframes announcementScroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-33.333%);
-  }
-}
-
-.durood-ticker-item {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding-right: 20px;
-  white-space: nowrap;
-}
-
-.durood-arabic {
-  font-family: 'Noto Nastaliq Urdu', 'Traditional Arabic', 'Scheherazade New', serif;
-  font-size: 1.05rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  color: #fce7b0;
-  text-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
   letter-spacing: 0.02em;
+}
+
+/* Center Text Wrapper with RTL */
+.durood-text-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   direction: rtl;
+  padding: 2px 4px;
+}
+
+.durood-arabic-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.durood-arabic-part {
+  font-family: 'Scheherazade New', 'Amiri', 'Traditional Arabic', serif;
+  font-size: 1.06rem;
+  font-weight: 600;
+  color: #faecc7;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+  letter-spacing: 0.01em;
+}
+
+.durood-ornament-bracket {
+  color: #d4af37;
+  font-size: 1.15rem;
+  opacity: 0.85;
 }
 
 .durood-separator {
-  color: rgba(243, 195, 178, 0.6);
-  font-size: 0.85rem;
-  animation: separatorSpin 8s linear infinite;
-  display: inline-block;
-}
-
-@keyframes separatorSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.durood-tagline {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #daebe3;
-  letter-spacing: 0.03em;
+  color: #ffd880;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  padding: 0 4px;
 }
 
 /* Dismiss button */
 .durood-dismiss-btn {
-  margin-right: 12px;
-  margin-left: 8px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(240, 192, 96, 0.25);
+  color: rgba(247, 226, 169, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,55 +154,84 @@
 }
 
 .durood-dismiss-btn:hover {
-  background: rgba(243, 195, 178, 0.3);
+  background: rgba(212, 175, 55, 0.25);
   color: #ffffff;
-  border-color: rgba(243, 195, 178, 0.6);
-  transform: scale(1.05);
+  border-color: rgba(240, 192, 96, 0.65);
+  transform: scale(1.08);
 }
 
 /* Collapsed Restore Button */
 .durood-restore {
   width: 100%;
-  height: 26px;
-  background: linear-gradient(90deg, #18241e, #1a2c26, #18241e);
+  height: 28px;
+  background: linear-gradient(90deg, #07130e, #0e2017, #07130e);
   border: none;
-  border-bottom: 1px solid rgba(212, 168, 67, 0.2);
+  border-bottom: 1px solid rgba(212, 168, 67, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: rgba(240, 192, 96, 0.7);
+  color: rgba(240, 192, 96, 0.85);
   cursor: pointer;
   transition: all 200ms ease;
 }
 
 .durood-restore:hover {
-  background: #1e352c;
-  color: #ffd880;
+  background: #132a1e;
+  color: #ffe699;
 }
 
 .durood-restore-badge {
-  font-family: 'Noto Nastaliq Urdu', serif;
   font-size: 0.85rem;
   color: #ffd880;
 }
 
 .durood-restore-text {
-  font-size: 0.6875rem;
-  letter-spacing: 0.05em;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   font-weight: 500;
 }
 
-@media (max-width: 640px) {
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .durood-banner-inner {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .durood-arabic-part {
+    font-size: 0.98rem;
+  }
+}
+
+@media (max-width: 680px) {
   .durood-announcement-banner {
-    height: 42px;
+    min-height: 64px;
+  }
+  .durood-banner-inner {
+    flex-wrap: wrap;
+    padding: 8px 10px;
   }
   .durood-badge {
-    padding: 4px 10px;
-    margin-left: 6px;
-    font-size: 0.7rem;
+    padding: 3px 10px;
+    font-size: 0.72rem;
   }
-  .durood-arabic {
-    font-size: 0.95rem;
+  .durood-text-wrapper {
+    order: 3;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .durood-arabic-content {
+    gap: 6px;
+  }
+  .durood-arabic-part {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .durood-shimmer-sweep {
+    animation: none;
+    display: none;
   }
 }

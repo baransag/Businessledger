@@ -14,10 +14,14 @@ function genId(): string {
 }
 
 export interface AccountWithBalance extends Account {
-  balance: number;       // opening + credits - debits (paisa)
-  totalCredit: number;   // total inflow paisa
-  totalDebit: number;    // total outflow paisa
-  txnCount: number;      // number of transactions
+  balance: number;            // opening + credits - debits (paisa)
+  totalCredit: number;        // total inflow paisa (all credits)
+  totalDebit: number;         // total outflow paisa (all debits)
+  txnCount: number;           // number of transactions
+  transfersInPaisa: number;   // incoming transfers
+  transfersOutPaisa: number;  // outgoing transfers
+  businessCreditPaisa: number;// normal business credits (excluding transfers)
+  businessDebitPaisa: number; // normal business debits (excluding transfers)
 }
 
 interface AccountState {
@@ -49,12 +53,109 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   loadAccounts: async (userId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const accounts = await db.accounts.where('userId').equals(userId).toArray();
+      let accounts = await db.accounts.where('userId').equals(userId).toArray();
+
       // Seed defaults if no accounts exist yet
       if (accounts.length === 0) {
         await get().seedDefaultAccounts(userId);
         return;
       }
+
+      // Safe additive migration for existing accounts:
+      let changed = false;
+      const now = Date.now();
+
+      // 1. Rename 'Meezan Bank' to 'Meezan Bank — Main' if present
+      const meezanOld = accounts.find(a => a.name === 'Meezan Bank');
+      if (meezanOld) {
+        await db.accounts.update(meezanOld.id, {
+          name: 'Meezan Bank — Main',
+          updatedAt: now,
+          syncStatus: 'pending',
+        });
+        meezanOld.name = 'Meezan Bank — Main';
+        changed = true;
+      }
+
+      // 2. Ensure 'Meezan Bank — Main' exists if neither old nor new was found
+      const hasMeezanMain = accounts.some(a => a.name === 'Meezan Bank — Main' || a.name === 'Meezan Bank');
+      if (!hasMeezanMain) {
+        const meezanMainPreset = PRESET_ACCOUNTS.find(p => p.name === 'Meezan Bank — Main')!;
+        const newMain: Account = {
+          id: genId(),
+          userId,
+          name: meezanMainPreset.name,
+          type: meezanMainPreset.type,
+          icon: meezanMainPreset.icon,
+          color: meezanMainPreset.color,
+          openingBalancePaisa: 0,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: 'pending',
+        };
+        await db.accounts.add(newMain);
+        accounts.push(newMain);
+        changed = true;
+      }
+
+      // 3. Ensure 'Meezan Bank — Muhammad Asif' exists
+      const hasMeezanAsif = accounts.some(a => a.name === 'Meezan Bank — Muhammad Asif');
+      if (!hasMeezanAsif) {
+        const asifPreset = PRESET_ACCOUNTS.find(p => p.name === 'Meezan Bank — Muhammad Asif')!;
+        const newAsif: Account = {
+          id: genId(),
+          userId,
+          name: asifPreset.name,
+          type: asifPreset.type,
+          icon: asifPreset.icon,
+          color: asifPreset.color,
+          openingBalancePaisa: 0,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: 'pending',
+        };
+        await db.accounts.add(newAsif);
+        accounts.push(newAsif);
+        changed = true;
+      }
+
+      // 4. Ensure 'Office Cash' exists
+      const hasOfficeCash = accounts.some(a => a.name === 'Office Cash');
+      if (!hasOfficeCash) {
+        const cashPreset = PRESET_ACCOUNTS.find(p => p.name === 'Office Cash')!;
+        const newCash: Account = {
+          id: genId(),
+          userId,
+          name: cashPreset.name,
+          type: 'cash',
+          icon: cashPreset.icon,
+          color: cashPreset.color,
+          openingBalancePaisa: 0,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          syncStatus: 'pending',
+        };
+        await db.accounts.add(newCash);
+        accounts.push(newCash);
+        changed = true;
+      }
+
+      if (changed) {
+        accounts = await db.accounts.where('userId').equals(userId).toArray();
+      }
+
+      // Consistent ordering: Banks first, then Wallets, then Cash
+      const orderMap: Record<string, number> = {};
+      PRESET_ACCOUNTS.forEach((p, idx) => { orderMap[p.name] = idx; });
+      accounts.sort((a, b) => {
+        const ordA = orderMap[a.name] ?? 999;
+        const ordB = orderMap[b.name] ?? 999;
+        return ordA - ordB;
+      });
+
       set({ accounts, isLoading: false });
     } catch {
       set({ isLoading: false, error: 'Unable to load accounts.' });
@@ -87,8 +188,8 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       userId,
       name: data.name || 'New Account',
       type: data.type || 'bank',
-      icon: data.icon || '🏦',
-      color: data.color || '#4A90D9',
+      icon: data.icon || (data.type === 'cash' ? '💵' : data.type === 'wallet' ? '📱' : '🏦'),
+      color: data.color || (data.type === 'cash' ? '#0F766E' : '#4A90D9'),
       openingBalancePaisa: data.openingBalancePaisa || 0,
       isActive: true,
       createdAt: now,
@@ -123,8 +224,34 @@ export const useAccountStore = create<AccountState>((set, get) => ({
 
     return accounts.map(account => {
       const acctTxns = activeTxns.filter(t => t.accountId === account.id);
-      const totalCredit = acctTxns.reduce((s, t) => s + t.creditPaisa, 0);
-      const totalDebit = acctTxns.reduce((s, t) => s + t.debitPaisa, 0);
+      
+      let totalCredit = 0;
+      let totalDebit = 0;
+      let transfersInPaisa = 0;
+      let transfersOutPaisa = 0;
+      let businessCreditPaisa = 0;
+      let businessDebitPaisa = 0;
+
+      acctTxns.forEach(t => {
+        const isTransfer = Boolean(t.transferId || t.category === 'Transfer');
+        if (t.creditPaisa > 0) {
+          totalCredit += t.creditPaisa;
+          if (isTransfer) {
+            transfersInPaisa += t.creditPaisa;
+          } else {
+            businessCreditPaisa += t.creditPaisa;
+          }
+        }
+        if (t.debitPaisa > 0) {
+          totalDebit += t.debitPaisa;
+          if (isTransfer) {
+            transfersOutPaisa += t.debitPaisa;
+          } else {
+            businessDebitPaisa += t.debitPaisa;
+          }
+        }
+      });
+
       const balance = account.openingBalancePaisa + totalCredit - totalDebit;
 
       return {
@@ -133,6 +260,10 @@ export const useAccountStore = create<AccountState>((set, get) => ({
         totalCredit,
         totalDebit,
         txnCount: acctTxns.length,
+        transfersInPaisa,
+        transfersOutPaisa,
+        businessCreditPaisa,
+        businessDebitPaisa,
       };
     });
   },
@@ -147,6 +278,11 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     const fromName = fromAccount?.name || 'Unknown';
     const toName = toAccount?.name || 'Unknown';
     const desc = description || `Transfer: ${fromName} → ${toName}`;
+    const pMethod = (fromAccount?.type === 'cash' || toAccount?.type === 'cash')
+      ? 'Cash'
+      : (fromAccount?.type === 'wallet' || toAccount?.type === 'wallet')
+        ? 'Online'
+        : 'Bank Transfer';
 
     // Debit from source
     const debitTxn: Transaction = {
@@ -160,7 +296,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       partyName: toName,
       description: desc,
       category: 'Transfer',
-      paymentMethod: 'Bank Transfer',
+      paymentMethod: pMethod,
       referenceNumber: '',
       debitPaisa: amountPaisa,
       creditPaisa: 0,
@@ -182,7 +318,7 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       partyName: fromName,
       description: desc,
       category: 'Transfer',
-      paymentMethod: 'Bank Transfer',
+      paymentMethod: pMethod,
       referenceNumber: '',
       debitPaisa: 0,
       creditPaisa: amountPaisa,

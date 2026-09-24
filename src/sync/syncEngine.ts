@@ -334,7 +334,7 @@ async function syncAccounts(userId: string): Promise<void> {
           id: row.id as string,
           userId: row.user_id as string,
           name: row.name as string,
-          type: (row.type as 'bank' | 'wallet') || 'bank',
+          type: (row.type as 'bank' | 'wallet' | 'cash') || 'bank',
           icon: (row.icon as string) || '🏦',
           color: (row.color as string) || '#4A90D9',
           openingBalancePaisa: Number(row.opening_balance_paisa) || 0,
@@ -347,7 +347,7 @@ async function syncAccounts(userId: string): Promise<void> {
         await db.accounts.put({
           ...existing,
           name: row.name as string,
-          type: (row.type as 'bank' | 'wallet') || 'bank',
+          type: (row.type as 'bank' | 'wallet' | 'cash') || 'bank',
           icon: (row.icon as string) || '🏦',
           color: (row.color as string) || '#4A90D9',
           openingBalancePaisa: Number(row.opening_balance_paisa) || 0,

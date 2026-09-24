@@ -24,56 +24,55 @@ const DuroodBanner: React.FC = () => {
 
   if (!visible) {
     return (
-      <button className="durood-restore" onClick={show} aria-label="Show Durood-e-Ibrahimi announcement ribbon">
+      <button className="durood-restore" onClick={show} aria-label="Show Durood-e-Ibrahimi banner">
         <span className="durood-restore-badge">﷽</span>
         <span className="durood-restore-text">✦ درودِ پاک — بارگاہِ نبوی ﷺ میں نذرانۂ عقیدت ✦ (Click to show banner)</span>
       </button>
     );
   }
 
-  const duroodSegment = (
-    <div className="durood-ticker-item">
-      <span className="durood-arabic">
-        اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ
-      </span>
-      <span className="durood-separator">✦</span>
-      <span className="durood-arabic">
-        اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ إِنَّكَ حَمِيدٌ مَجِيدٌ
-      </span>
-      <span className="durood-separator">✦</span>
-      <span className="durood-tagline">
-        درودِ پاک پڑھنے سے کاروبار، مال اور رزق میں بے پناہ خیر و برکت نصیب ہوتی ہے ﷺ
-      </span>
-      <span className="durood-separator">✦</span>
-    </div>
-  );
+  const duroodFirstPart = "اَللّٰھُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَّعَلٰى اٰلِ مُحَمَّدٍ كَمَا صَلَّيْتَ عَلٰى اِبْرَاھِيْمَ وَعَلٰى اٰلِ اِبْرَاھِيْمَ اِنَّكَ حَمِيْدٌ مَّجِيْدٌ";
+  const duroodSecondPart = "اَللّٰھُمَّ بَارِكْ عَلٰى مُحَمَّدٍ وَّعَلٰى اٰلِ مُحَمَّدٍ كَمَا بَارَكْتَ عَلٰى اِبْرَاھِيْمَ وَعَلٰى اٰلِ اِبْرَاھِيْمَ اِنَّكَ حَمِيْدٌ مَّجِيْدٌ";
 
   return (
-    <div className="durood-announcement-banner" role="region" aria-label="Durood Sharif Announcement Ribbon">
-      {/* Left Announcement Badge */}
-      <div className="durood-badge">
-        <span className="durood-pulse-dot" />
-        <span className="durood-badge-icon">﷽</span>
-        <span className="durood-badge-label">دُرودِ پاک</span>
-      </div>
+    <aside className="durood-announcement-banner" role="region" aria-label="Durood-e-Ibrahimi announcement ribbon">
+      {/* Background Islamic Geometric Pattern Accent & Light Sweep */}
+      <div className="durood-bg-pattern" aria-hidden="true" />
+      <div className="durood-shimmer-sweep" aria-hidden="true" />
 
-      {/* Marquee ticker track container */}
-      <div className="durood-marquee-container">
-        <div className="durood-marquee-track">
-          {duroodSegment}
-          {duroodSegment}
-          {duroodSegment}
+      <div className="durood-banner-inner">
+        {/* Left Badge: Title */}
+        <div className="durood-badge">
+          <span className="durood-pulse-dot" />
+          <span className="durood-badge-icon">﷽</span>
+          <span className="durood-badge-label">درودِ ابراہیمی ﷺ</span>
         </div>
-      </div>
 
-      {/* Close button */}
-      <button className="durood-dismiss-btn" onClick={hide} aria-label="Dismiss banner" title="Hide banner">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
-    </div>
+        {/* Center: Complete Arabic Durood Text */}
+        <div className="durood-text-wrapper" dir="rtl">
+          <div className="durood-arabic-content">
+            <span className="durood-ornament-bracket">﴿</span>
+            <span className="durood-arabic-part">{duroodFirstPart}</span>
+            <span className="durood-separator" aria-hidden="true">۞</span>
+            <span className="durood-arabic-part">{duroodSecondPart}</span>
+            <span className="durood-ornament-bracket">﴾</span>
+          </div>
+        </div>
+
+        {/* Right: Integrated Dismiss Button */}
+        <button
+          className="durood-dismiss-btn"
+          onClick={hide}
+          aria-label="Hide Durood Banner"
+          title="Hide banner (preference saved)"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </aside>
   );
 };
 

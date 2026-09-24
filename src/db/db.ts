@@ -36,6 +36,21 @@ export class LeadgerDB extends Dexie {
         if (txn.transferId === undefined) txn.transferId = '';
       });
     });
+
+    // v3 — add cash type, migrate Meezan Bank to Meezan Bank — Main
+    this.version(3).stores({
+      transactions: 'id, userId, date, createdAt, updatedAt, isDeleted, syncStatus, partyName, category, paymentMethod, accountId',
+      settings:     'id, userId',
+      categories:   'id, userId, name',
+      paymentMethods: 'id, userId, name',
+      accounts:     'id, userId, name, type, isActive',
+    }).upgrade(async tx => {
+      await tx.table('accounts').toCollection().modify(acc => {
+        if (acc.name === 'Meezan Bank') {
+          acc.name = 'Meezan Bank — Main';
+        }
+      });
+    });
   }
 }
 

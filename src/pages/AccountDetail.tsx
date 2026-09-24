@@ -39,9 +39,87 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
     [transactions, accountId]
   );
 
-  const totalCredit = accountTxns.reduce((s, t) => s + t.creditPaisa, 0);
-  const totalDebit = accountTxns.reduce((s, t) => s + t.debitPaisa, 0);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredTxns = useMemo(() => {
+    if (!searchTerm.trim()) return accountTxns;
+    const q = searchTerm.toLowerCase();
+    return accountTxns.filter(t =>
+      t.partyName.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      (t.category && t.category.toLowerCase().includes(q)) ||
+      (t.referenceNumber && t.referenceNumber.toLowerCase().includes(q))
+    );
+  }, [accountTxns, searchTerm]);
+
+  let totalCredit = 0;
+  let totalDebit = 0;
+  let transfersIn = 0;
+  let transfersOut = 0;
+  let businessCredit = 0;
+  let businessDebit = 0;
+
+  accountTxns.forEach(t => {
+    const isTrans = Boolean(t.transferId || t.category === 'Transfer');
+    if (t.creditPaisa > 0) {
+      totalCredit += t.creditPaisa;
+      if (isTrans) transfersIn += t.creditPaisa;
+      else businessCredit += t.creditPaisa;
+    }
+    if (t.debitPaisa > 0) {
+      totalDebit += t.debitPaisa;
+      if (isTrans) transfersOut += t.debitPaisa;
+      else businessDebit += t.debitPaisa;
+    }
+  });
+
   const balance = (account?.openingBalancePaisa || 0) + totalCredit - totalDebit;
+
+  // Running balances for export
+  const withBalanceRows = useMemo(() => {
+    let running = account?.openingBalancePaisa || 0;
+    const sortedAsc = [...accountTxns].reverse();
+    return sortedAsc.map(t => {
+      running += t.creditPaisa - t.debitPaisa;
+      return { ...t, runningBalance: running };
+    });
+  }, [accountTxns, account?.openingBalancePaisa]);
+
+  const handleExportPDF = async () => {
+    try {
+      const { exportStatementPDF } = await import('../utils/pdfExport');
+      await exportStatementPDF(
+        withBalanceRows,
+        {
+          openingPaisa: account?.openingBalancePaisa || 0,
+          creditPaisa: totalCredit,
+          debitPaisa: totalDebit,
+          closingPaisa: balance,
+        },
+        null,
+        `${account?.name} Statement`,
+        `${account?.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-statement.pdf`
+      );
+      toast.success('Account statement exported as PDF');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to export PDF');
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const { exportToExcel } = await import('../utils/excelExport');
+      exportToExcel(
+        withBalanceRows,
+        `${account?.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-ledger.xlsx`
+      );
+      toast.success('Account statement exported as Excel');
+    } catch (e) {
+      console.error(e);
+      toast.error('Failed to export Excel');
+    }
+  };
 
   // Opening balance editor
   const [editingOB, setEditingOB] = useState(false);
@@ -79,17 +157,28 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
     );
   }
 
+  const isCash = account.type === 'cash';
+
   return (
     <div className="account-detail">
-      {/* Back button */}
-      <button
-        className="btn btn-ghost btn-sm"
-        onClick={() => navigate('/accounts')}
-        style={{ marginBottom: 16 }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-        All Accounts
-      </button>
+      {/* Back button & Action row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => navigate('/accounts')}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+          All Accounts
+        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-ghost btn-sm" onClick={handleExportPDF} title="Download PDF Statement">
+            📄 PDF Statement
+          </button>
+          <button className="btn btn-ghost btn-sm" onClick={handleExportExcel} title="Download Excel Ledger">
+            📊 Excel Export
+          </button>
+        </div>
+      </div>
 
       {/* Hero Card */}
       <div className="account-hero" style={{ background: `linear-gradient(135deg, ${account.color}, ${account.color}CC)` }}>
@@ -98,21 +187,29 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
             <BankLogo accountName={account.name} type={account.type} size={48} />
           </div>
           <span className="account-hero-badge">
-            {account.type === 'wallet' ? '📱 Digital Wallet' : '🏦 Bank Account'}
+            {account.type === 'cash' ? '💵 Physical Cash Account' : account.type === 'wallet' ? '📱 Digital Wallet' : '🏦 Bank Account'}
           </span>
         </div>
         <div className="account-hero-name">{account.name}</div>
         <div className="account-hero-balance-label">Current Balance</div>
         <div className="account-hero-balance">{formatPKR(balance)}</div>
 
-        <div className="account-hero-stats">
+        <div className="account-hero-stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))' }}>
           <div className="account-hero-stat">
-            <div className="label">Money In</div>
+            <div className="label">{isCash ? 'Total Cash In' : 'Total Money In'}</div>
             <div className="value">{formatPKR(totalCredit)}</div>
           </div>
           <div className="account-hero-stat">
-            <div className="label">Money Out</div>
+            <div className="label">{isCash ? 'Total Cash Out' : 'Total Money Out'}</div>
             <div className="value">{formatPKR(totalDebit)}</div>
+          </div>
+          <div className="account-hero-stat">
+            <div className="label">Transfers In</div>
+            <div className="value">{formatPKR(transfersIn)}</div>
+          </div>
+          <div className="account-hero-stat">
+            <div className="label">Transfers Out</div>
+            <div className="value">{formatPKR(transfersOut)}</div>
           </div>
           <div className="account-hero-stat">
             <div className="label">Transactions</div>
@@ -167,16 +264,33 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
         </div>
       )}
 
-      {/* Transactions Table */}
+      {/* Transactions Table & Search Filter */}
       <div className="card">
-        <div className="account-txn-header">
-          <div className="card-title">Account Transactions</div>
-          <span className="text-muted text-sm">{accountTxns.length} records</span>
+        <div className="account-txn-header" style={{ flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div className="card-title">Account Transactions</div>
+            <span className="text-muted text-sm">{filteredTxns.length} of {accountTxns.length} records</span>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              type="text"
+              className="form-input form-input-sm"
+              placeholder="Search party or notes…"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ width: 190 }}
+            />
+            {searchTerm && (
+              <button className="btn btn-ghost btn-sm" onClick={() => setSearchTerm('')}>Clear</button>
+            )}
+          </div>
         </div>
 
-        {accountTxns.length === 0 ? (
+        {filteredTxns.length === 0 ? (
           <div className="empty-state" style={{ padding: '30px 0' }}>
-            <p className="text-muted">No transactions recorded for this account yet.</p>
+            <p className="text-muted">
+              {searchTerm ? 'No transactions match your search.' : 'No transactions recorded for this account yet.'}
+            </p>
           </div>
         ) : (
           <div className="table-wrap">
@@ -192,7 +306,7 @@ const AccountDetail: React.FC<AccountDetailProps> = ({ onAddTransaction }) => {
                 </tr>
               </thead>
               <tbody>
-                {accountTxns.map(t => (
+                {filteredTxns.map(t => (
                   <tr key={t.id}>
                     <td className="text-sm text-muted">{formatDisplayDate(t.date)}</td>
                     <td className="font-semibold">{t.partyName}</td>

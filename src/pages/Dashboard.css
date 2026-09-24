@@ -139,6 +139,147 @@
   border: 1px solid rgba(140, 91, 35, 0.2);
 }
 
+.tag-cash {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  border: 1px solid rgba(15, 118, 110, 0.25);
+}
+
+/* ─── Money Position & Money Movement Sections ─── */
+.section-header-wrap {
+  margin-top: 28px;
+  margin-bottom: 14px;
+}
+
+.section-headline {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--clr-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-subheadline {
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+  margin-top: 2px;
+}
+
+/* Money Position 4-Card Grid */
+.money-position-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.money-position-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 249, 0.82) 100%);
+  border: 1px solid rgba(101, 113, 102, 0.16);
+  border-radius: var(--radius-xl);
+  padding: 20px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.money-position-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -6px rgba(101, 113, 102, 0.2);
+}
+
+.pos-cash {
+  border-top: 3px solid #0F766E;
+}
+.pos-bank {
+  border-top: 3px solid #1B6B3A;
+}
+.pos-wallet {
+  border-top: 3px solid #3AAA35;
+}
+.pos-total {
+  border-top: 3px solid #2563EB;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(238, 242, 255, 0.9) 100%);
+}
+
+.pos-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  background: rgba(101, 113, 102, 0.08);
+}
+
+/* Money Movement 3-Card Grid */
+.money-movement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.money-movement-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 249, 0.82) 100%);
+  border: 1px solid rgba(101, 113, 102, 0.16);
+  border-radius: var(--radius-xl);
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.money-movement-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -6px rgba(101, 113, 102, 0.2);
+}
+
+.mov-in {
+  border-top: 3px solid #10b981;
+}
+.mov-out {
+  border-top: 3px solid #ef4444;
+}
+.mov-net {
+  border-top: 3px solid #3b82f6;
+}
+
+.internal-transfer-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 0.775rem;
+  color: var(--clr-text-muted);
+  background: rgba(101, 113, 102, 0.06);
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px dashed rgba(101, 113, 102, 0.22);
+}
+
+@media (max-width: 900px) {
+  .money-position-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .money-movement-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .money-position-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Stat Cards Ambient Glass */
 .stat-credit {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(218, 235, 227, 0.55) 100%) !important;
